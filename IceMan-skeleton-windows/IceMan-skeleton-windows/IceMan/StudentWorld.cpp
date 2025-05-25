@@ -39,7 +39,7 @@ int StudentWorld:: move(){
 				return GWSTATUS_PLAYER_DIED;
 			}
 			if(playerCompletedCurrentLevel()){
-				playFinishedLevelSound();
+				playSound(GWSTATUS_FINISHED_LEVEL);
 				return GWSTATUS_FINISHED_LEVEL;
 			}
 		}
@@ -55,7 +55,7 @@ int StudentWorld:: move(){
 
 		if(playerCompletedCurrentLevel()){
 
-			playFinishedLevelSound();
+			playSound(GWSTATUS_FINISHED_LEVEL);
 			return GWSTATUS_FINISHED_LEVEL;
 		}
 		//if player hasnt died or finished the level then continue the game
@@ -87,27 +87,84 @@ void StudentWorld:: cleanUp(){
     }
 	return;
 }
+StudentWorld::~StudentWorld() { cleanUp(); }
+
+
+
+void StudentWorld::addNewActors(){
+return;
+}
+
+void StudentWorld::removeDeadActors(){
+
+	for (auto a : actors){
+		if(a->isAlive() == false){
+			a->setVisible(false);
+		}
+	}
+	return;
+}
+
+//TODO: commented ones rely on items being done(names can change)
+//example:     Lvl: 52 Lives: 3 Hlth: 80% Wtr: 20 Gld: 3 Oil Left: 2 Sonar: 1 Scr: 321000
+void StudentWorld::updateDisplayText(){
+	int level = getLevel();
+	int lives = getLives();
+	// int health = getHP();
+	// int water = getWaterAmount();
+	// int gold = getGold();
+	int barrelsLeft = remainingOil;
+	//int sonar = getSonarAmount();
+	int score = getScore();
+
+	//need to make all of this into a string then format
+	string s = "";
+	//prints to the stats in game
+	setGameStatText(s);
+
+return;
+}
 
 //should have a 2D array of ice actors
 //should place the IceMan 
-void createOilField(){
-
+void StudentWorld::createOilField(){
+return;
 }
+
+bool StudentWorld::playerCompletedCurrentLevel(){
+	if (remainingOil <= 0){
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
+bool StudentWorld::playerDiedDuringThisTick(){
+	if(player->isAlive() == false){
+		return false;
+	}
+	else{
+		decLives();
+		return true;
+	}
+}
+
+
+
+
 	/*
 
-	//when the game first starts, when the player completes the current, when the player loses a life (but has more lives left
-	virtual int init(){
-		return GWSTATUS_CONTINUE_GAME;
-	}
+all GameWorld functions
 
-	virtual int move(){
-		// This code is here merely to allow the game to build, run, and terminate after you hit enter a few times.
-		// Notice that the return value GWSTATUS_PLAYER_DIED will cause our framework to end the current level.
-		decLives();
-		return GWSTATUS_PLAYER_DIED;
-	}
-
-	// virtual void cleanUp(){
-	// }
+unsigned int getLives() const;
+void decLives();
+void incLives();
+unsigned int getScore() const;
+unsigned int getLevel() const;
+void increaseScore(unsigned int howMuch);
+void setGameStatText(string text);
+bool getKey(int& value);
+void playSound(int soundID);
 
 */

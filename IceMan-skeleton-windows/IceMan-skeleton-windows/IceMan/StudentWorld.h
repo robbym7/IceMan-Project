@@ -18,9 +18,6 @@ public:
 	virtual int init();
     virtual int move();
     virtual void cleanUp();
-
-	//Give Each Actor a Chance to Do Something
-	void actorsDoSomething();
 	
 	//Add New Actors During Each Tick
 	void addNewActors();
@@ -40,12 +37,19 @@ private:
 
 	bool playerDiedDuringThisTick();
 
-	void playFinishedLevelSound();
+	
 
 	vector<Actor *> actors;
 	Ice* icefield[VIEW_WIDTH][VIEW_HEIGHT];
 	IceMan* player;
 
+
+	int remainingOil;
+	//everything that changes from level to level
+	int currentLevel;
+	int numBoulders;
+	int numGoldNuggets;
+	int numOilBarrels;
 
 
 

@@ -3,38 +3,68 @@
 
 #include "GraphObject.h"
 
+class StudentWorld;
+
 //TODO: for now all of these are dummy functions so that StudentWorld "works"
+
+
 
 class Actor : public GraphObject {
 public:
     Actor(StudentWorld* world, int startX, int startY, Direction startDir,
         bool visible, int imageID, double size, int depth);
-    //gets player_alive
+   
+    virtual void move() = 0;
+
     bool isAlive() const;
 
-
+    
 private:
-    bool alive = true;
+    bool alive;
 };
 
-class IceMan : public Actor {};
+//gets alive
 
-class Ice : public Actor{};
+ 
 
-class Boulders : public Actor{};
 
-class Squirt : public Actor{};
+//All actor classes
 
-class OilBarrel : public Actor{};
+class IceMan : public Actor {
+    void IceMan:: move();
+};
 
-class GoldNugget : public Actor{};
+class Ice : public Actor{
+void Ice:: move();
+};
 
-class SonarKit : public Actor{};
+class Boulders : public Actor{
+void Boulders:: move();
+};
 
-class WaterPool : public Actor{};
+class Squirt : public Actor{
+void Squirt:: move();
+};
+
+class OilBarrel : public Actor{
+void OilBarrel:: move();
+};
+
+class GoldNugget : public Actor{
+void GoldNugget:: move();
+};
+
+class SonarKit : public Actor{
+void SonarKit:: move();
+};
+
+class WaterPool : public Actor{
+void WaterPool:: move();
+};
 
 class Protester: public Actor {
 public:
+
 };
 
 class HardcoreProtester: public Protester {

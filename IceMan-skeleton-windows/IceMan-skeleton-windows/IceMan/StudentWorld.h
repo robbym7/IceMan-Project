@@ -6,8 +6,8 @@
 #include <string>
 
 #include "Actor.h"
+#include <vector>
 
-// Students:  Add code to this file, StudentWorld.cpp, Actor.h, and Actor.cpp
 
 class StudentWorld : public GameWorld
 {
@@ -36,8 +36,15 @@ private:
 	//creates the oilField
 	void createOilField();
 
+	bool playerCompletedCurrentLevel();
 
+	bool playerDiedDuringThisTick();
 
+	void playFinishedLevelSound();
+
+	vector<Actor *> actors;
+	Ice* icefield[VIEW_WIDTH][VIEW_HEIGHT];
+	IceMan* player;
 
 
 

@@ -15,34 +15,81 @@ StudentWorld::StudentWorld(std::string assetDir): GameWorld(assetDir){
 
 int StudentWorld:: init(){
 	if (getLives() > 0){
-
-	
-	vector<Actor *> actors;
-
-	//should have a 2D array of ice actors
-	//should place the IceMan 
 	createOilField();
 
 	return GWSTATUS_CONTINUE_GAME;
 }
 else{
+
 	return GWSTATUS_PLAYER_DIED;
 }
 	
 }
 int StudentWorld:: move(){
 	updateDisplayText();
-	actorsDoSomething();
-	removeDeadActors();
-	if(isAlive() = true){
 
+	//player needs to move first 
+
+	//check if each actor is alive
+	for (auto a : actors){
+		if(a->isAlive()){
+			//actors perform their action then check if player died or finished level
+			a->move();
+			if(playerDiedDuringThisTick()){
+				return GWSTATUS_PLAYER_DIED;
+			}
+			if(playerCompletedCurrentLevel()){
+				playFinishedLevelSound();
+				return GWSTATUS_FINISHED_LEVEL;
+			}
+		}
 	}
+	//remove any actors that died
+	removeDeadActors();
 
+	
+	if(playerDiedDuringThisTick()){
+		return GWSTATUS_PLAYER_DIED;
+	}
+	else{
+
+		if(playerCompletedCurrentLevel()){
+
+			playFinishedLevelSound();
+			return GWSTATUS_FINISHED_LEVEL;
+		}
+		//if player hasnt died or finished the level then continue the game
+		return GWSTATUS_CONTINUE_GAME;
+	}
 }
+
+//is called when player loses a life
 void StudentWorld:: cleanUp(){
 	
+	for(auto a : actors){
+		delete a;
+	}
+	//actors.clear memory leaks if you dont delete one by one first
+	actors.clear();
+
+	//need to delete player since stored seperate from actors
+	if(player != nullptr){
+		delete player;
+		player =  nullptr;
+	}
+
+	//need to delete the ice array seperatley since it is stored as a seperate 2D array
+	 for (int i = 0; i < VIEW_WIDTH; i++) {
+        for (int j = 0; j < VIEW_HEIGHT; j++) {
+            delete icefield[i][j];
+            icefield[i][j] = nullptr;
+        }
+    }
+	return;
 }
 
+//should have a 2D array of ice actors
+//should place the IceMan 
 void createOilField(){
 
 }

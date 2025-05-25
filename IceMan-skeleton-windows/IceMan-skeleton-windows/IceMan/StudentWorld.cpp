@@ -35,7 +35,7 @@ int StudentWorld:: move(){
 	actorsDoSomething();
 	removeDeadActors();
 	if(isAlive() = true){
-		
+
 	}
 
 }

@@ -7,13 +7,14 @@
 
 class Actor : public GraphObject {
 public:
-    Actor();
+    Actor(StudentWorld* world, int startX, int startY, Direction startDir,
+        bool visible, int imageID, double size, int depth);
     //gets player_alive
     bool isAlive() const;
 
 
 private:
-    bool alive;
+    bool alive = true;
 };
 
 class IceMan : public Actor {};

@@ -9,6 +9,7 @@ Actor:: Actor(StudentWorld* world, int startX, int startY, Direction startDir,
         
 };
 
+
 void IceMan:: move(){};
 
 void Ice:: move(){};

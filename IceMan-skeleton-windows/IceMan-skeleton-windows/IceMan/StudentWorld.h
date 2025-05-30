@@ -45,7 +45,7 @@ private:
 
 
 	int remainingOil;
-	//everything that changes from level to level
+	//everything that changes based on the level number
 	int currentLevel;
 	int numBoulders;
 	int numGoldNuggets;

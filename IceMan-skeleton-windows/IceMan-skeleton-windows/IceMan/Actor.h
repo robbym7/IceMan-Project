@@ -23,9 +23,11 @@ private:
     bool alive;
 };
 
-//gets alive
-
  
+
+
+
+
 
 
 //All actor classes

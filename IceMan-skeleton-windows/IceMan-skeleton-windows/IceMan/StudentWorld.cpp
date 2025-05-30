@@ -87,10 +87,11 @@ void StudentWorld:: cleanUp(){
     }
 	return;
 }
+//destructor
 StudentWorld::~StudentWorld() { cleanUp(); }
 
 
-
+//TODO: finish this
 void StudentWorld::addNewActors(){
 return;
 }

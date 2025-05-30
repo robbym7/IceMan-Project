@@ -10,8 +10,8 @@ GameWorld* createStudentWorld(string assetDir)
 {
 	return new StudentWorld(assetDir);
 }
-StudentWorld::StudentWorld(std::string assetDir): GameWorld(assetDir){
-}
+// StudentWorld::StudentWorld(std::string assetDir): GameWorld(assetDir){
+// }
 
 int StudentWorld:: init(){
 	if (getLives() > 0){

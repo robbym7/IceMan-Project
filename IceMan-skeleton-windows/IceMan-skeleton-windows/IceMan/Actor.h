@@ -13,14 +13,19 @@ class Actor : public GraphObject {
 public:
     Actor(StudentWorld* world, int startX, int startY, Direction startDir,
         bool visible, int imageID, double size, int depth);
-   
+
+    Actor();
+    
+    StudentWorld* getWorld() const;
     virtual void move() = 0;
 
     bool isAlive() const;
 
-    
+     
 private:
     bool alive;
+    StudentWorld* world;
+   
 };
 
  
@@ -33,15 +38,21 @@ private:
 //All actor classes
 
 class IceMan : public Actor {
-    void IceMan:: move();
+    IceMan(StudentWorld* world, int startX, int startY, Direction startDir,
+        int imageID, unsigned int hitPoints);
+    void move();
 };
+
+
 
 class Ice : public Actor{
-void Ice:: move();
+    void move();
 };
 
+
+/*
 class Boulders : public Actor{
-void Boulders:: move();
+move();
 };
 
 class Squirt : public Actor{
@@ -73,5 +84,5 @@ class HardcoreProtester: public Protester {
 public:
 };
 
-
+*/
 #endif // ACTOR_H_

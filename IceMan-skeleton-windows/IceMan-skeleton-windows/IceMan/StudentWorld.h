@@ -39,7 +39,7 @@ private:
 
 	
 
-	vector<Actor *> actors;
+	std::vector <Actor*> actors;
 	Ice* icefield[VIEW_WIDTH][VIEW_HEIGHT];
 	IceMan* player;
 

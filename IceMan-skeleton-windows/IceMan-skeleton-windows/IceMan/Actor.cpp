@@ -6,11 +6,12 @@
 //constructor for actor
 Actor::Actor(StudentWorld* sw, int startX, int startY, Direction startDir, int imageID, double size, int depth, bool visible)
     :GraphObject(imageID, startX, startY, startDir, size, depth)
-    , alive(true), world(sw)
+    ,alive(true), world(sw)
 {
     setVisible(visible);
 }
 
+void Actor::setAlive(bool state) { alive = state; }
 
 IceMan::IceMan(StudentWorld* sw, int startX, int startY)
     :Actor(sw, startX, startY, right, IID_PLAYER, 1.0, 0, true)
@@ -18,11 +19,8 @@ IceMan::IceMan(StudentWorld* sw, int startX, int startY)
     setVisible(true);
 }
 
-void IceMan::move() {
-    /*if (isAlive() == false) {
-        return;
-    }*/
-    //TODO: Dig when overlap with Ice
+void IceMan::doSomething() {
+
     int input;
     StudentWorld* sw = getWorld();
     Direction dir = getDirection();
@@ -34,7 +32,7 @@ void IceMan::move() {
             }
             else {
                 moveTo(getX() - 1, getY());
-                sw->playerDig(right, getX() - 1, getY());
+                getWorld()->playerDig(GraphObject::left, getX(), getY());
             }
             break;
         case KEY_PRESS_RIGHT:
@@ -43,7 +41,7 @@ void IceMan::move() {
             }
             else {
                 moveTo(getX() + 1, getY());
-                sw->playerDig(right, getX() + 1, getY());
+                getWorld()->playerDig(GraphObject::right, getX(), getY());
             }
             break;
         case KEY_PRESS_UP:
@@ -52,7 +50,8 @@ void IceMan::move() {
             }
             else {
                 moveTo(getX(), getY() + 1);
-                sw->playerDig(right, getX(), getY() + 1);
+                getWorld()->playerDig(GraphObject::up, getX(), getY());
+
             }
             break;
         case KEY_PRESS_DOWN:
@@ -61,7 +60,8 @@ void IceMan::move() {
             }
             else {
                 moveTo(getX(), getY() - 1);
-                sw->playerDig(right, getX(), getY() - 1);
+                getWorld()->playerDig(GraphObject::down, getX(), getY());
+
             }
             break;
         }
@@ -70,7 +70,7 @@ void IceMan::move() {
 
 
 //doSomething() equivalent    
-void Ice::move() {};
+void Ice::doSomething() { ; };
 
 /*
 void Boulders:: move(){};

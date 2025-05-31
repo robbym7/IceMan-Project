@@ -28,12 +28,14 @@ int StudentWorld::move() {
 	updateDisplayText();
 
 	//player needs to move first 
-	player->move();
+	player->doSomething();
+
 	//check if each actor is alive
+	/*
 	for (auto a : actors) {
 		if (a->isAlive()) {
 			//actors perform their action then check if player died or finished level
-			a->move();
+			a->doSomething();
 			if (playerDiedDuringThisTick()) {
 				return GWSTATUS_PLAYER_DIED;
 			}
@@ -52,18 +54,21 @@ int StudentWorld::move() {
 	}
 	else {
 
-		/*if (playerCompletedCurrentLevel()) {
+		if (playerCompletedCurrentLevel()) {
 
 			playSound(GWSTATUS_FINISHED_LEVEL);
 			return GWSTATUS_FINISHED_LEVEL;
-		}*/
+		}
 		//if player hasnt died or finished the level then continue the game
 		return GWSTATUS_CONTINUE_GAME;
 	}
 
+	*/
+	return GWSTATUS_CONTINUE_GAME;
 }
 
 //is called when player loses a life
+
 void StudentWorld::cleanUp() {
 
 	for (auto a : actors) {
@@ -79,8 +84,8 @@ void StudentWorld::cleanUp() {
 	}
 
 	//need to delete the ice array seperatley since it is stored as a seperate 2D array
-	for (int i = 0; i < VIEW_WIDTH; i++) {
-		for (int j = 0; j < VIEW_HEIGHT; j++) {
+	for (int i = 0; i < 64; i++) {
+		for (int j = 0; j < 60; j++) {
 			delete icefield[i][j];
 			icefield[i][j] = nullptr;
 		}
@@ -126,8 +131,67 @@ void StudentWorld::updateDisplayText() {
 	return;
 }
 
-//should have a 2D array of ice actors
-//should place the IceMan 
+//issue: IceMan occasionally skips over the closest edge at the time of digging
+void StudentWorld::playerDig(GraphObject::Direction dir, int x, int y) {
+	switch (dir) {
+	case GraphObject::right:
+		if (x + 4 >= 64 || y + 3 >= 60)
+			return;
+
+		for (int i = 0; i < 4; i++) {
+			if (icefield[x + 4][y + i] != nullptr) {
+				playSound(SOUND_DIG);
+				digIce(x + 3, y + i);
+			}
+		}
+		break;
+
+
+	case(GraphObject::left):
+		if (x - 1 < 0 || y + 3 >= 60)
+			return;
+		for (int i = 0; i < 4; i++) {
+			if (icefield[x - 1][y + i] != nullptr) {
+				playSound(SOUND_DIG);
+				digIce(x, y + i);
+			}
+		}
+		break;
+
+	case(GraphObject::down):
+		if (y - 1 < 0)
+			return;
+		for (int i = 0; i < 4; i++) {
+			if (icefield[x + i ][y - 1] != nullptr) {
+				playSound(SOUND_DIG);
+				digIce(x + i, y);
+			}
+		}
+		break;
+
+	case(GraphObject::up):
+		if (y + 4 >= 60)
+			return;
+		for (int i = 0; i < 4; i++) {
+			if (icefield[x + i][y + 1] != nullptr) {
+				playSound(SOUND_DIG);
+				digIce(x + i, y);
+			}
+		}
+		break;
+	}
+}
+
+
+void StudentWorld::digIce(int x, int y) {
+	if (x < 0 || x > 64 || y < 0 || y > 60) { return; }
+	if (icefield[x][y] == nullptr) { return; }
+
+	icefield[x][y]->setVisible(false);
+	delete icefield[x][y];
+	icefield[x][y] = nullptr;
+}
+
 void StudentWorld::createOilField() {
 
 	player = new IceMan(this, 30, 60);
@@ -135,7 +199,10 @@ void StudentWorld::createOilField() {
 	// test creating new Ice blocks
 	for (int i = 0; i < 64; i++) {
 		for (int j = 0; j < 60; j++) {
-			icefield[i][j] = new Ice(this, i, j);
+			if (i >= 30 && i <= 33 && j > 3) { icefield[i][j] = nullptr; }
+			else {
+				icefield[i][j] = new Ice(this, i, j);
+			}
 		}
 	}
 }
@@ -162,67 +229,6 @@ bool StudentWorld::playerDiedDuringThisTick() {
 }
 
 
-void StudentWorld::playerDig(GraphObject::Direction dir, int x, int y)
-{
-	switch (dir) {
-	case(GraphObject::right):
-		if (x > VIEW_WIDTH - SPRITE_WIDTH) {
-			return;
-		}
-		for (int i = 0; i < SPRITE_WIDTH; i++) {
-			if (y + i < VIEW_HEIGHT) {
-				if (icefield[x + 3][y + i] != nullptr) {
-					playSound(SOUND_DIG);
-					delete icefield[x + 3][y + i];
-					icefield[x + 3][y + i] = nullptr;
-				}
-			}
-		}
-		break;
-
-		//only ever does this first one anyway
-	//case(GraphObject::left):
-	//	if (x < 0)
-	//		return;
-	//	for (int i = 0; i < SPRITE_WIDTH; i++) {
-	//		if (y + i < VIEW_HEIGHT) {
-	//			if (icefield[x][y + i] != nullptr) {
-	//				playSound(SOUND_DIG);
-	//				delete icefield[x][y + i];
-	//				icefield[x][y + i] = nullptr;
-	//			}
-	//		}
-	//	}
-	//	break;
-	//case(GraphObject::down):
-	//	if (y < 0)
-	//		return;
-	//	for (int i = 0; i < SPRITE_HEIGHT; i++) {
-	//		if (x + i < VIEW_WIDTH) {
-	//			if (icefield[x + i][y] != nullptr) {
-	//				playSound(SOUND_DIG);
-	//				delete icefield[x + i][y];
-	//				icefield[x + i][y] = nullptr;
-	//			}
-	//		}
-	//	}
-	//	break;
-	//case(GraphObject::up):
-	//	if (y > VIEW_HEIGHT - SPRITE_HEIGHT)
-	//		return;
-	//	for (int i = 0; i < SPRITE_HEIGHT; i++) {
-	//		if (y + 3 < VIEW_HEIGHT) {
-	//			if (icefield[x + i][y + 3] != nullptr) {
-	//				playSound(SOUND_DIG);
-	//				delete icefield[x + i][y + 3];
-	//				icefield[x + i][y + 3] = nullptr;
-	//			}
-	//		}
-	//	}
-	//	break;
-	//}
-	//return;
-}
 
 /*
 

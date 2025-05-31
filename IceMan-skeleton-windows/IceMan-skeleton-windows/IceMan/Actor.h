@@ -10,30 +10,23 @@ class StudentWorld;
 
 
 class Actor : public GraphObject {
+private:
+    bool alive;
+    StudentWorld* world;
+
 public:
     Actor(StudentWorld* sw, int startX, int startY, Direction startDir, int imageID, double size, int depth, bool visible);
 
+    virtual ~Actor() {}
+
     StudentWorld* getWorld() const;
 
-    virtual void move() = 0;
+    virtual void doSomething() = 0;
 
     bool isAlive() const;
 
-    bool moveIfPossible(int x, int y);
-
-private:
-
-
-    bool alive;
-
-    StudentWorld* world;
-
+    void setAlive(bool state);
 };
-
-
-
-
-
 
 
 
@@ -43,7 +36,8 @@ private:
 class IceMan : public Actor {
 public:
     IceMan(StudentWorld* sw, int startX, int startY);
-    void move();
+
+    void doSomething();
 
 };
 
@@ -57,7 +51,8 @@ public:
         setVisible(true);
     }
 
-    void move();
+    void doSomething();
+
 };
 
 
@@ -96,4 +91,5 @@ public:
 };
 
 */
+
 #endif // ACTOR_H_

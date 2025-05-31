@@ -37,6 +37,8 @@ class IceMan : public Actor {
 public:
     IceMan(StudentWorld* sw, int startX, int startY);
 
+    ~IceMan() {}
+
     void doSomething();
 
 };
@@ -50,6 +52,8 @@ public:
     {
         setVisible(true);
     }
+
+    ~Ice() {}
 
     void doSomething();
 

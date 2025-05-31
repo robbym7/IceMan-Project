@@ -31,7 +31,7 @@ int StudentWorld::move() {
 	player->doSomething();
 
 	//check if each actor is alive
-	/*
+	
 	for (auto a : actors) {
 		if (a->isAlive()) {
 			//actors perform their action then check if player died or finished level
@@ -54,17 +54,14 @@ int StudentWorld::move() {
 	}
 	else {
 
-		if (playerCompletedCurrentLevel()) {
+		/*if (playerCompletedCurrentLevel()) {
 
 			playSound(GWSTATUS_FINISHED_LEVEL);
 			return GWSTATUS_FINISHED_LEVEL;
-		}
+		}*/
 		//if player hasnt died or finished the level then continue the game
 		return GWSTATUS_CONTINUE_GAME;
 	}
-
-	*/
-	return GWSTATUS_CONTINUE_GAME;
 }
 
 //is called when player loses a life

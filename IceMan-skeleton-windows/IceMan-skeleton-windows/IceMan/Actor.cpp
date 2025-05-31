@@ -68,8 +68,12 @@ void IceMan::doSomething() {
     }
 }
 
+Ice::Ice(StudentWorld* sw, int startX, int startY)
+    :Actor(sw, startX, startY, right, IID_ICE, 0.25, 3, true)
+{
+    setVisible(true);
+}
 
-//doSomething() equivalent    
 void Ice::doSomething() { ; };
 
 /*

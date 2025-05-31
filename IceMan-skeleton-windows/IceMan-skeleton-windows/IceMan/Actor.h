@@ -10,10 +10,6 @@ class StudentWorld;
 
 
 class Actor : public GraphObject {
-private:
-    bool alive;
-    StudentWorld* world;
-
 public:
     Actor(StudentWorld* sw, int startX, int startY, Direction startDir, int imageID, double size, int depth, bool visible);
 
@@ -23,7 +19,17 @@ public:
 
     bool isAlive() const;
 
+    bool moveIfPossible(int x, int y);
+
+private:
+
+
+    bool alive;
+
+    StudentWorld* world;
+
 };
+
 
 
 

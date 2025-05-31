@@ -28,7 +28,9 @@ public:
 	//Updating the Display Text
 	void updateDisplayText();
 
+	void playerDig(GraphObject::Direction dir, int x, int y);
 
+	
 private:
 	//creates the oilField
 	void createOilField();
@@ -37,10 +39,10 @@ private:
 
 	bool playerDiedDuringThisTick();
 
-
+	Ice* icefield[VIEW_WIDTH][VIEW_HEIGHT];
 
 	std::vector <Actor*> actors;
-	Ice* icefield[VIEW_WIDTH][VIEW_HEIGHT];
+	
 	IceMan* player;
 
 

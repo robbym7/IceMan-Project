@@ -28,7 +28,7 @@ int StudentWorld::move() {
 	updateDisplayText();
 
 	//player needs to move first 
-
+	player->move();
 	//check if each actor is alive
 	for (auto a : actors) {
 		if (a->isAlive()) {
@@ -60,7 +60,7 @@ int StudentWorld::move() {
 		//if player hasnt died or finished the level then continue the game
 		return GWSTATUS_CONTINUE_GAME;
 	}
-	
+
 }
 
 //is called when player loses a life
@@ -162,7 +162,67 @@ bool StudentWorld::playerDiedDuringThisTick() {
 }
 
 
+void StudentWorld::playerDig(GraphObject::Direction dir, int x, int y)
+{
+	switch (dir) {
+	case(GraphObject::right):
+		if (x > VIEW_WIDTH - SPRITE_WIDTH) {
+			return;
+		}
+		for (int i = 0; i < SPRITE_WIDTH; i++) {
+			if (y + i < VIEW_HEIGHT) {
+				if (icefield[x + 3][y + i] != nullptr) {
+					playSound(SOUND_DIG);
+					delete icefield[x + 3][y + i];
+					icefield[x + 3][y + i] = nullptr;
+				}
+			}
+		}
+		break;
 
+		//only ever does this first one anyway
+	//case(GraphObject::left):
+	//	if (x < 0)
+	//		return;
+	//	for (int i = 0; i < SPRITE_WIDTH; i++) {
+	//		if (y + i < VIEW_HEIGHT) {
+	//			if (icefield[x][y + i] != nullptr) {
+	//				playSound(SOUND_DIG);
+	//				delete icefield[x][y + i];
+	//				icefield[x][y + i] = nullptr;
+	//			}
+	//		}
+	//	}
+	//	break;
+	//case(GraphObject::down):
+	//	if (y < 0)
+	//		return;
+	//	for (int i = 0; i < SPRITE_HEIGHT; i++) {
+	//		if (x + i < VIEW_WIDTH) {
+	//			if (icefield[x + i][y] != nullptr) {
+	//				playSound(SOUND_DIG);
+	//				delete icefield[x + i][y];
+	//				icefield[x + i][y] = nullptr;
+	//			}
+	//		}
+	//	}
+	//	break;
+	//case(GraphObject::up):
+	//	if (y > VIEW_HEIGHT - SPRITE_HEIGHT)
+	//		return;
+	//	for (int i = 0; i < SPRITE_HEIGHT; i++) {
+	//		if (y + 3 < VIEW_HEIGHT) {
+	//			if (icefield[x + i][y + 3] != nullptr) {
+	//				playSound(SOUND_DIG);
+	//				delete icefield[x + i][y + 3];
+	//				icefield[x + i][y + 3] = nullptr;
+	//			}
+	//		}
+	//	}
+	//	break;
+	//}
+	//return;
+}
 
 /*
 

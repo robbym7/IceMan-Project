@@ -10,35 +10,34 @@ GameWorld* createStudentWorld(string assetDir)
 {
 	return new StudentWorld(assetDir);
 }
-// StudentWorld::StudentWorld(std::string assetDir): GameWorld(assetDir){
-// }
 
-int StudentWorld:: init(){
-	if (getLives() > 0){
-	createOilField();
+int StudentWorld::init() {
+	if (getLives() > 0) {
+		createOilField();
 
-	return GWSTATUS_CONTINUE_GAME;
-}
-else{
+		return GWSTATUS_CONTINUE_GAME;
+	}
+	else {
 
-	return GWSTATUS_PLAYER_DIED;
+		return GWSTATUS_PLAYER_DIED;
+	}
+
 }
-	
-}
-int StudentWorld:: move(){
+int StudentWorld::move() {
+	//return GWSTATUS_PLAYER_DIED;
 	updateDisplayText();
 
 	//player needs to move first 
 
 	//check if each actor is alive
-	for (auto a : actors){
-		if(a->isAlive()){
+	for (auto a : actors) {
+		if (a->isAlive()) {
 			//actors perform their action then check if player died or finished level
 			a->move();
-			if(playerDiedDuringThisTick()){
+			if (playerDiedDuringThisTick()) {
 				return GWSTATUS_PLAYER_DIED;
 			}
-			if(playerCompletedCurrentLevel()){
+			if (playerCompletedCurrentLevel()) {
 				playSound(GWSTATUS_FINISHED_LEVEL);
 				return GWSTATUS_FINISHED_LEVEL;
 			}
@@ -47,44 +46,45 @@ int StudentWorld:: move(){
 	//remove any actors that died
 	removeDeadActors();
 
-	
-	if(playerDiedDuringThisTick()){
+
+	if (playerDiedDuringThisTick()) {
 		return GWSTATUS_PLAYER_DIED;
 	}
-	else{
+	else {
 
-		if(playerCompletedCurrentLevel()){
+		/*if (playerCompletedCurrentLevel()) {
 
 			playSound(GWSTATUS_FINISHED_LEVEL);
 			return GWSTATUS_FINISHED_LEVEL;
-		}
+		}*/
 		//if player hasnt died or finished the level then continue the game
 		return GWSTATUS_CONTINUE_GAME;
 	}
+	
 }
 
 //is called when player loses a life
-void StudentWorld:: cleanUp(){
-	
-	for(auto a : actors){
+void StudentWorld::cleanUp() {
+
+	for (auto a : actors) {
 		delete a;
 	}
 	//actors.clear memory leaks if you dont delete one by one first
 	actors.clear();
 
 	//need to delete player since stored seperate from actors
-	if(player != nullptr){
+	if (player != nullptr) {
 		delete player;
-		player =  nullptr;
+		player = nullptr;
 	}
 
 	//need to delete the ice array seperatley since it is stored as a seperate 2D array
-	 for (int i = 0; i < VIEW_WIDTH; i++) {
-        for (int j = 0; j < VIEW_HEIGHT; j++) {
-            delete icefield[i][j];
-            icefield[i][j] = nullptr;
-        }
-    }
+	for (int i = 0; i < VIEW_WIDTH; i++) {
+		for (int j = 0; j < VIEW_HEIGHT; j++) {
+			delete icefield[i][j];
+			icefield[i][j] = nullptr;
+		}
+	}
 	return;
 }
 //destructor
@@ -92,14 +92,14 @@ StudentWorld::~StudentWorld() { cleanUp(); }
 
 
 //TODO: finish this
-void StudentWorld::addNewActors(){
-return;
+void StudentWorld::addNewActors() {
+	return;
 }
 
-void StudentWorld::removeDeadActors(){
+void StudentWorld::removeDeadActors() {
 
-	for (auto a : actors){
-		if(a->isAlive() == false){
+	for (auto a : actors) {
+		if (a->isAlive() == false) {
 			a->setVisible(false);
 		}
 	}
@@ -108,7 +108,7 @@ void StudentWorld::removeDeadActors(){
 
 //TODO: commented ones rely on items being done(names can change)
 //example:     Lvl: 52 Lives: 3 Hlth: 80% Wtr: 20 Gld: 3 Oil Left: 2 Sonar: 1 Scr: 321000
-void StudentWorld::updateDisplayText(){
+void StudentWorld::updateDisplayText() {
 	int level = getLevel();
 	int lives = getLives();
 	// int health = getHP();
@@ -123,17 +123,25 @@ void StudentWorld::updateDisplayText(){
 	//prints to the stats in game
 	setGameStatText(s);
 
-return;
+	return;
 }
 
 //should have a 2D array of ice actors
 //should place the IceMan 
-void StudentWorld::createOilField(){
-return;
+void StudentWorld::createOilField() {
+
+	player = new IceMan(this, 30, 60);
+
+	// test creating new Ice blocks
+	for (int i = 0; i < 64; i++) {
+		for (int j = 0; j < 60; j++) {
+			icefield[i][j] = new Ice(this, i, j);
+		}
+	}
 }
 
-bool StudentWorld::playerCompletedCurrentLevel(){
-	if (remainingOil <= 0){
+bool StudentWorld::playerCompletedCurrentLevel() {
+	if (remainingOil <= 0) {
 		return true;
 	}
 	else {
@@ -141,20 +149,22 @@ bool StudentWorld::playerCompletedCurrentLevel(){
 	}
 }
 
-bool StudentWorld::playerDiedDuringThisTick(){
-	if(player->isAlive() == false){
+bool StudentWorld::playerDiedDuringThisTick() {
+	/*if (player->isAlive() == false) {
 		return false;
 	}
-	else{
+	else {
 		decLives();
 		return true;
 	}
+	*/
+	return false;
 }
 
 
 
 
-	/*
+/*
 
 all GameWorld functions
 

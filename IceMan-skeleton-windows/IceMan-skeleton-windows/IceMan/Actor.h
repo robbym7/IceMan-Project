@@ -10,25 +10,22 @@ class StudentWorld;
 
 
 class Actor : public GraphObject {
-public:
-    Actor(StudentWorld* world, int startX, int startY, Direction startDir,
-        bool visible, int imageID, double size, int depth);
+private:
+    bool alive;
+    StudentWorld* world;
 
-    Actor();
-    
+public:
+    Actor(StudentWorld* sw, int startX, int startY, Direction startDir, int imageID, double size, int depth, bool visible);
+
     StudentWorld* getWorld() const;
+
     virtual void move() = 0;
 
     bool isAlive() const;
 
-     
-private:
-    bool alive;
-    StudentWorld* world;
-   
 };
 
- 
+
 
 
 
@@ -38,14 +35,22 @@ private:
 //All actor classes
 
 class IceMan : public Actor {
-    IceMan(StudentWorld* world, int startX, int startY, Direction startDir,
-        int imageID, unsigned int hitPoints);
+public:
+    IceMan(StudentWorld* sw, int startX, int startY);
     void move();
+
 };
 
 
 
-class Ice : public Actor{
+class Ice : public Actor {
+public:
+    Ice(StudentWorld* sw, int startX, int startY)
+        :Actor(sw, startX, startY, right, IID_ICE, 0.25, 3, true)
+    {
+        setVisible(true);
+    }
+
     void move();
 };
 

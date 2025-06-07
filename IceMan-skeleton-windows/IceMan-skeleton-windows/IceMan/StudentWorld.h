@@ -32,6 +32,8 @@ public:
 
 	void digIce(int x, int y);
 
+	bool canMove(int x, int y);
+
 private:
 	//creates the oilField
 	void createOilField();

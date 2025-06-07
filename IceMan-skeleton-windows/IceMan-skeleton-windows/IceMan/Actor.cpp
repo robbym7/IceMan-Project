@@ -31,8 +31,10 @@ void IceMan::doSomething() {
                 setDirection(left);
             }
             else {
-                moveTo(getX() - 1, getY());
-                getWorld()->playerDig(GraphObject::left, getX(), getY());
+                if (sw->canMove(getX() - 1, getY())) {
+                    moveTo(getX() - 1, getY());
+                    sw->playerDig(GraphObject::left, getX(), getY());
+                }
             }
             break;
         case KEY_PRESS_RIGHT:
@@ -40,8 +42,10 @@ void IceMan::doSomething() {
                 setDirection(right);
             }
             else {
-                moveTo(getX() + 1, getY());
-                getWorld()->playerDig(GraphObject::right, getX(), getY());
+                if (sw->canMove(getX() + 1, getY())) {
+                    moveTo(getX() + 1, getY());
+                    sw->playerDig(GraphObject::right, getX(), getY());
+                }
             }
             break;
         case KEY_PRESS_UP:
@@ -49,9 +53,10 @@ void IceMan::doSomething() {
                 setDirection(up);
             }
             else {
-                moveTo(getX(), getY() + 1);
-                getWorld()->playerDig(GraphObject::up, getX(), getY());
-
+                if (sw->canMove(getX(), getY() + 1)) {
+                    moveTo(getX(), getY() + 1);
+                    sw->playerDig(GraphObject::up, getX(), getY());
+                }
             }
             break;
         case KEY_PRESS_DOWN:
@@ -59,9 +64,10 @@ void IceMan::doSomething() {
                 setDirection(down);
             }
             else {
-                moveTo(getX(), getY() - 1);
-                getWorld()->playerDig(GraphObject::down, getX(), getY());
-
+                if (sw->canMove(getX(), getY() - 1)) {
+                    moveTo(getX(), getY() - 1);
+                    sw->playerDig(GraphObject::down, getX(), getY());
+                }
             }
             break;
         }

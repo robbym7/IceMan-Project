@@ -128,15 +128,14 @@ void StudentWorld::updateDisplayText() {
 	return;
 }
 
-//issue: IceMan occasionally skips over the closest edge at the time of digging
 void StudentWorld::playerDig(GraphObject::Direction dir, int x, int y) {
 	switch (dir) {
 	case GraphObject::right:
-		if (x + 4 >= 64 || y + 3 >= 60)
+		if (x + 3 >= 64 || y + 3 >= 60)
 			return;
 
 		for (int i = 0; i < 4; i++) {
-			if (icefield[x + 4][y + i] != nullptr) {
+			if (icefield[x + 3][y + i] != nullptr) {
 				playSound(SOUND_DIG);
 				digIce(x + 3, y + i);
 			}
@@ -145,10 +144,10 @@ void StudentWorld::playerDig(GraphObject::Direction dir, int x, int y) {
 
 
 	case(GraphObject::left):
-		if (x - 1 < 0 || y + 3 >= 60)
+		if (x < 0 || y + 3 >= 60)
 			return;
 		for (int i = 0; i < 4; i++) {
-			if (icefield[x - 1][y + i] != nullptr) {
+			if (icefield[x][y + i] != nullptr) {
 				playSound(SOUND_DIG);
 				digIce(x, y + i);
 			}
@@ -156,10 +155,10 @@ void StudentWorld::playerDig(GraphObject::Direction dir, int x, int y) {
 		break;
 
 	case(GraphObject::down):
-		if (y - 1 < 0)
+		if (y < 0 || x + 3 >= 64)
 			return;
 		for (int i = 0; i < 4; i++) {
-			if (icefield[x + i ][y - 1] != nullptr) {
+			if (icefield[x + i][y] != nullptr) {
 				playSound(SOUND_DIG);
 				digIce(x + i, y);
 			}
@@ -167,10 +166,10 @@ void StudentWorld::playerDig(GraphObject::Direction dir, int x, int y) {
 		break;
 
 	case(GraphObject::up):
-		if (y + 4 >= 60)
+		if (y >= 60 || x + 3 >= 64)
 			return;
 		for (int i = 0; i < 4; i++) {
-			if (icefield[x + i][y + 1] != nullptr) {
+			if (icefield[x + i][y] != nullptr) {
 				playSound(SOUND_DIG);
 				digIce(x + i, y);
 			}
@@ -187,6 +186,10 @@ void StudentWorld::digIce(int x, int y) {
 	icefield[x][y]->setVisible(false);
 	delete icefield[x][y];
 	icefield[x][y] = nullptr;
+}
+
+bool StudentWorld::canMove(int x, int y) {
+	return (x >= 0 && x < 64 && y >= 0 && y < 64);
 }
 
 void StudentWorld::createOilField() {

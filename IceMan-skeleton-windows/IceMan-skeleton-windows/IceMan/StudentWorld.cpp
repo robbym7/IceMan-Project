@@ -2,6 +2,7 @@
 #include <string>
 
 #include "Actor.h"
+#include <cmath>
 #include <vector>
 using namespace std;
 
@@ -25,7 +26,7 @@ int StudentWorld::init() {
 }
 int StudentWorld::move() {
 	//return GWSTATUS_PLAYER_DIED;
-	updateDisplayText();
+	//updateDisplayText();
 
 	//player needs to move first 
 	player->move();
@@ -52,11 +53,11 @@ int StudentWorld::move() {
 	}
 	else {
 
-		/*if (playerCompletedCurrentLevel()) {
+		if (playerCompletedCurrentLevel()) {
 
 			playSound(GWSTATUS_FINISHED_LEVEL);
 			return GWSTATUS_FINISHED_LEVEL;
-		}*/
+		}
 		//if player hasnt died or finished the level then continue the game
 		return GWSTATUS_CONTINUE_GAME;
 	}
@@ -91,8 +92,9 @@ void StudentWorld::cleanUp() {
 StudentWorld::~StudentWorld() { cleanUp(); }
 
 
-//TODO: finish this
-void StudentWorld::addNewActors() {
+
+void StudentWorld::addActor(Actor* a) {
+	actors.push_back(a);
 	return;
 }
 
@@ -129,18 +131,33 @@ void StudentWorld::updateDisplayText() {
 //should have a 2D array of ice actors
 //should place the IceMan 
 void StudentWorld::createOilField() {
-
+	srand(time(NULL));
 	player = new IceMan(this, 30, 60);
+	currentLevel = getLevel();
+	remainingOil = numOilBarrels;
+
 
 	// test creating new Ice blocks
 	for (int i = 0; i < 64; i++) {
 		for (int j = 0; j < 60; j++) {
 			icefield[i][j] = new Ice(this, i, j);
+			continue;
+			if ((i >= 30 && i <= 33) && j >= SPRITE_WIDTH) {
+				icefield[i][j] = nullptr;
+				continue;
+			}
 		}
 	}
+	actors.push_back(new RegularProtester(this, 60, 60, IID_PROTESTER));
+	actors.push_back(new HardcoreProtester(this, 60, 60, IID_HARD_CORE_PROTESTER));
+
 }
 
-bool StudentWorld::playerCompletedCurrentLevel() {
+int StudentWorld::getRemainingOil(){
+	return remainingOil;
+}
+
+bool StudentWorld::playerCompletedCurrentLevel() const {
 	if (remainingOil <= 0) {
 		return true;
 	}
@@ -150,82 +167,94 @@ bool StudentWorld::playerCompletedCurrentLevel() {
 }
 
 bool StudentWorld::playerDiedDuringThisTick() {
-	/*if (player->isAlive() == false) {
+	if (player->isAlive() == false) {
 		return false;
 	}
 	else {
 		decLives();
 		return true;
 	}
-	*/
+	
 	return false;
+}
+double StudentWorld::distance(int x1, int y1, int x2, int y2) const
+{
+	return sqrt((pow(x2 - x1, 2) + pow(y2 - y1, 2) * 1.0));
+}
+
+bool StudentWorld::isNearIceMan(Actor* a, int radius) const
+{
+	int actorX = a->getX();
+	int actorY = a->getY();
+	int playerX = player->getX();
+	int playerY = player->getY();
+	double dist = distance(actorX, actorY, playerX, playerY);
+	if (dist <= radius)
+		return true;
+	else
+		return false;
 }
 
 
 void StudentWorld::playerDig(GraphObject::Direction dir, int x, int y)
 {
 	switch (dir) {
-	case(GraphObject::right):
-		if (x > VIEW_WIDTH - SPRITE_WIDTH) {
-			return;
-		}
-		for (int i = 0; i < SPRITE_WIDTH; i++) {
-			if (y + i < VIEW_HEIGHT) {
-				if (icefield[x + 3][y + i] != nullptr) {
-					playSound(SOUND_DIG);
-					delete icefield[x + 3][y + i];
-					icefield[x + 3][y + i] = nullptr;
-				}
-			}
-		}
-		break;
-
-		//only ever does this first one anyway
-	//case(GraphObject::left):
-	//	if (x < 0)
-	//		return;
-	//	for (int i = 0; i < SPRITE_WIDTH; i++) {
-	//		if (y + i < VIEW_HEIGHT) {
-	//			if (icefield[x][y + i] != nullptr) {
-	//				playSound(SOUND_DIG);
-	//				delete icefield[x][y + i];
-	//				icefield[x][y + i] = nullptr;
-	//			}
-	//		}
-	//	}
-	//	break;
-	//case(GraphObject::down):
-	//	if (y < 0)
-	//		return;
-	//	for (int i = 0; i < SPRITE_HEIGHT; i++) {
-	//		if (x + i < VIEW_WIDTH) {
-	//			if (icefield[x + i][y] != nullptr) {
-	//				playSound(SOUND_DIG);
-	//				delete icefield[x + i][y];
-	//				icefield[x + i][y] = nullptr;
-	//			}
-	//		}
-	//	}
-	//	break;
-	//case(GraphObject::up):
-	//	if (y > VIEW_HEIGHT - SPRITE_HEIGHT)
-	//		return;
-	//	for (int i = 0; i < SPRITE_HEIGHT; i++) {
-	//		if (y + 3 < VIEW_HEIGHT) {
-	//			if (icefield[x + i][y + 3] != nullptr) {
-	//				playSound(SOUND_DIG);
-	//				delete icefield[x + i][y + 3];
-	//				icefield[x + i][y + 3] = nullptr;
-	//			}
-	//		}
-	//	}
-	//	break;
-	//}
-	//return;
+    case(GraphObject::right):
+        if (x > VIEW_WIDTH - SPRITE_WIDTH)
+            return;
+        for (int i = 0; i < SPRITE_WIDTH; i++) {
+            if (y + i < VIEW_HEIGHT) {
+                if (icefield[x + 3][y + i] != nullptr) {
+                    playSound(SOUND_DIG);
+                    delete icefield[x + 3][y + i];
+                    icefield[x + 3][y + i] = nullptr;
+                }
+            }
+        }
+        break;
+    case(GraphObject::left):
+        if (x < 0)
+            return;
+        for (int i = 0; i < SPRITE_WIDTH; i++) {
+            if (y + i < VIEW_HEIGHT) {
+                if (icefield[x][y + i] != nullptr) {
+                    playSound(SOUND_DIG);
+                    delete icefield[x][y + i];
+                    icefield[x][y + i] = nullptr;
+                }
+            }
+        }
+        break;
+    case(GraphObject::down):
+        if (y < 0)
+            return;
+        for (int i = 0; i < SPRITE_HEIGHT; i++) {
+            if(x + i < VIEW_WIDTH ){
+                if (icefield[x + i][y] != nullptr) {
+                    playSound(SOUND_DIG);
+                    delete icefield[x + i][y];
+                    icefield[x + i][y] = nullptr;
+                }
+            }
+        }
+        break;
+    case(GraphObject::up):
+        if (y > VIEW_HEIGHT - SPRITE_HEIGHT)
+            return;
+        for (int i = 0; i < SPRITE_HEIGHT; i++) {
+            if (y + 3 < VIEW_HEIGHT) {
+                if (icefield[x + i][y + 3] != nullptr) {
+                    playSound(SOUND_DIG);
+                    delete icefield[x + i][y + 3];
+                    icefield[x + i][y + 3] = nullptr;
+                }
+            }
+        }
+        break;
+    }
+    return;
 }
-
 /*
-
 all GameWorld functions
 
 unsigned int getLives() const;

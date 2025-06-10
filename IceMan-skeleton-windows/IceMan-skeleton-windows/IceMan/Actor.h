@@ -2,12 +2,8 @@
 #define ACTOR_H_
 
 #include "GraphObject.h"
-
+#include <vector>
 class StudentWorld;
-
-//TODO: for now all of these are dummy functions so that StudentWorld "works"
-
-
 
 class Actor : public GraphObject {
 public:
@@ -15,23 +11,42 @@ public:
 
     StudentWorld* getWorld() const;
 
+    bool moveToIfPossible(int x, int y);
+
+    // Action to perform each tick.
     virtual void move() = 0;
 
+    // Is this actor alive?
     bool isAlive() const;
 
-    bool moveIfPossible(int x, int y);
+    // Mark this actor as dead.
+    void setDead();
+
+    // Annoy this actor.
+    virtual bool annoy(unsigned int amt);
+
+    int getTickCounter() const;
+
+    void increaseTick();
+
+    unsigned int tickCounter;
 
 private:
-
-
     bool alive;
+
 
     StudentWorld* world;
 
 };
 
-
-
+class Squirt : public Actor
+{
+public:
+    Squirt(StudentWorld* world, int startX, int startY, Direction startDir);
+    virtual void move();
+private:
+    int distanceTraveled;
+};
 
 
 
@@ -40,60 +55,121 @@ private:
 
 //All actor classes
 
-class IceMan : public Actor {
+// class IceMan : public Actor {
+// public:
+//     IceMan(StudentWorld* sw, int startX, int startY);
+//     void move();
+
+// };
+
+
+
+//
+class Agent : public Actor
+{
 public:
-    IceMan(StudentWorld* sw, int startX, int startY);
-    void move();
+    Agent(StudentWorld* world, int startX, int startY, Direction startDir,
+        int imageID, unsigned int hitPoints);
 
+    // Pick up a gold nugget.
+    virtual void addGold() = 0;
+
+    // How many hit points does this actor have left?
+    unsigned int getHitPoints() const;
+
+    virtual bool annoy(unsigned int amount);
+    virtual bool canPickThingsUp() const;
+private:
+    unsigned int hp;
 };
 
-
-
-class Ice : public Actor {
+class IceMan : public Agent
+{
 public:
-    Ice(StudentWorld* sw, int startX, int startY)
-        :Actor(sw, startX, startY, right, IID_ICE, 0.25, 3, true)
-    {
-        setVisible(true);
-    }
+    IceMan(StudentWorld* world, int startX, int startY);
+    virtual void move();
+    virtual bool annoy(unsigned int amount);
+    virtual void addGold();
+    virtual bool canDigThroughIce() const;
 
-    void move();
+    // Pick up a sonar kit.
+    void addSonar();
+
+    // Pick up water.
+    void addWater();
+
+    // Get amount of gold
+    unsigned int getGold() const;
+
+    // Get amount of sonar charges
+    unsigned int getSonar() const;
+
+    // Get amount of water
+    unsigned int getWater() const;
 };
 
-
-/*
-class Boulders : public Actor{
-move();
-};
-
-class Squirt : public Actor{
-void Squirt:: move();
-};
-
-class OilBarrel : public Actor{
-void OilBarrel:: move();
-};
-
-class GoldNugget : public Actor{
-void GoldNugget:: move();
-};
-
-class SonarKit : public Actor{
-void SonarKit:: move();
-};
-
-class WaterPool : public Actor{
-void WaterPool:: move();
-};
-
-class Protester: public Actor {
+class Protester : public Agent
+{
 public:
+    Protester(StudentWorld* world, int startX, int startY, int imageID,
+        unsigned int hitPoints, unsigned int score);
+    virtual void move();
+    virtual bool annoy(unsigned int amount);
+    virtual void addGold();
+    virtual bool huntsIceMan() const;
+    bool canPickDroppedGoldUp() const;
 
+    // Set state to having given up protest
+    void setMustLeaveOilField();
+
+    // Set number of ticks until next move
+    void setTicksToNextMove();
+
+    int getTicksToNextMove() const;
+
+    bool getWantsToLeaveOilField() const;
+
+    void incNonRestingTick();
+
+    int getNonRestingTick() const;
+
+    void resetNonRestingTick();
+
+
+
+
+    bool wantsToLeaveOilField;
+    int ticksBetweenMoves;
+    int nonRestingTick;
 };
 
-class HardcoreProtester: public Protester {
+class RegularProtester : public Protester
+{
 public:
+    RegularProtester(StudentWorld* world, int startX, int startY, int imageID);
+    virtual void move();
+    virtual void addGold();
+
 };
 
-*/
+class HardcoreProtester : public Protester
+{
+public:
+    HardcoreProtester(StudentWorld* world, int startX, int startY, int imageID);
+    virtual void move();
+    virtual void addGold();
+};
+
+class Ice : public Actor
+{
+public:
+    Ice(StudentWorld* world, int stsartX, int startY);
+    virtual void move();
+};
+
+
+
+
+std::vector<std::vector<int>> pathFind(Ice* icefield[VIEW_WIDTH][VIEW_HEIGHT]);
+
 #endif // ACTOR_H_

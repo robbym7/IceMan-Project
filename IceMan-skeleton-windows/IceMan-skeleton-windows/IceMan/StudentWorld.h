@@ -20,7 +20,7 @@ public:
 	virtual void cleanUp();
 
 	//Add New Actors During Each Tick
-	void addNewActors();
+	void addActor(Actor* a);
 
 	//Remove Dead Actors after Each Tick
 	void removeDeadActors();
@@ -30,22 +30,27 @@ public:
 
 	void playerDig(GraphObject::Direction dir, int x, int y);
 
-	
+	bool isNearIceMan(Actor* a, int radius) const;
+
+	Ice* (*getIceField())[VIEW_WIDTH];
+
+	int getRemainingOil();
+
 private:
 	//creates the oilField
 	void createOilField();
 
-	bool playerCompletedCurrentLevel();
+	bool playerCompletedCurrentLevel() const;
 
 	bool playerDiedDuringThisTick();
 
 	Ice* icefield[VIEW_WIDTH][VIEW_HEIGHT];
 
 	std::vector <Actor*> actors;
-	
+
 	IceMan* player;
 
-
+	double distance(int x1, int y1, int x2, int y2) const;
 	int remainingOil;
 	//everything that changes based on the level number
 	int currentLevel;

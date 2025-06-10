@@ -9,7 +9,7 @@ using namespace std;
 
 Actor::Actor(StudentWorld* sw, int startX, int startY, Direction startDir, int imageID, double size, int depth, bool visible)
     :GraphObject(imageID, startX, startY, startDir, size, depth)
-    , alive(true), world(sw)
+    ,alive(true), world(sw)
 {
     setVisible(visible);
 }
@@ -95,8 +95,10 @@ void IceMan::move() {
                 setDirection(left);
             }
             else {
-                moveTo(getX() - 1, getY());
-                sw->playerDig(right, getX() - 1, getY());
+                if (sw->canMove(getX() - 1, getY())) {
+                    moveTo(getX() - 1, getY());
+                    sw->playerDig(GraphObject::left, getX(), getY());
+                }
             }
             break;
         case KEY_PRESS_RIGHT:
@@ -104,8 +106,10 @@ void IceMan::move() {
                 setDirection(right);
             }
             else {
-                moveTo(getX() + 1, getY());
-                sw->playerDig(right, getX() + 1, getY());
+                if (sw->canMove(getX() + 1, getY())) {
+                    moveTo(getX() + 1, getY());
+                    sw->playerDig(GraphObject::right, getX(), getY());
+                }
             }
             break;
         case KEY_PRESS_UP:
@@ -113,8 +117,10 @@ void IceMan::move() {
                 setDirection(up);
             }
             else {
-                moveTo(getX(), getY() + 1);
-                sw->playerDig(right, getX(), getY() + 1);
+                if (sw->canMove(getX(), getY() + 1)) {
+                    moveTo(getX(), getY() + 1);
+                    sw->playerDig(GraphObject::up, getX(), getY());
+                }
             }
             break;
         case KEY_PRESS_DOWN:
@@ -122,8 +128,10 @@ void IceMan::move() {
                 setDirection(down);
             }
             else {
-                moveTo(getX(), getY() - 1);
-                sw->playerDig(right, getX(), getY() - 1);
+                if (sw->canMove(getX(), getY() - 1)) {
+                    moveTo(getX(), getY() - 1);
+                    sw->playerDig(GraphObject::down, getX(), getY());
+                }
             }
             break;
         }

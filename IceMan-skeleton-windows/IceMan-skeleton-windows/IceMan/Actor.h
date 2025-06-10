@@ -6,8 +6,14 @@
 class StudentWorld;
 
 class Actor : public GraphObject {
+private:
+    bool alive;
+    StudentWorld* world;
+
 public:
     Actor(StudentWorld* sw, int startX, int startY, Direction startDir, int imageID, double size, int depth, bool visible);
+
+    virtual ~Actor() {}
 
     StudentWorld* getWorld() const;
 
@@ -68,6 +74,13 @@ private:
 class Agent : public Actor
 {
 public:
+
+
+
+
+
+class Ice : public Actor {
+public:
     Agent(StudentWorld* world, int startX, int startY, Direction startDir,
         int imageID, unsigned int hitPoints);
 
@@ -82,6 +95,17 @@ public:
 private:
     unsigned int hp;
 };
+
+class IceMan : public Actor {
+public:
+    IceMan(StudentWorld* sw, int startX, int startY);
+
+    ~IceMan() {}
+
+    void doSomething();
+
+};
+
 
 class IceMan : public Agent
 {
@@ -160,12 +184,12 @@ public:
     virtual void addGold();
 };
 
-class Ice : public Actor
-{
-public:
-    Ice(StudentWorld* world, int stsartX, int startY);
-    virtual void move();
-};
+// class Ice : public Actor
+// {
+// public:
+// //     Ice(StudentWorld* world, int stsartX, int startY);
+// //     virtual void move();
+// // };
 
 
 

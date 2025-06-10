@@ -65,6 +65,7 @@ int StudentWorld::move() {
 }
 
 //is called when player loses a life
+
 void StudentWorld::cleanUp() {
 
 	for (auto a : actors) {
@@ -80,8 +81,8 @@ void StudentWorld::cleanUp() {
 	}
 
 	//need to delete the ice array seperatley since it is stored as a seperate 2D array
-	for (int i = 0; i < VIEW_WIDTH; i++) {
-		for (int j = 0; j < VIEW_HEIGHT; j++) {
+	for (int i = 0; i < 64; i++) {
+		for (int j = 0; j < 60; j++) {
 			delete icefield[i][j];
 			icefield[i][j] = nullptr;
 		}
@@ -128,8 +129,70 @@ void StudentWorld::updateDisplayText() {
 	return;
 }
 
-//should have a 2D array of ice actors
-//should place the IceMan 
+void StudentWorld::playerDig(GraphObject::Direction dir, int x, int y) {
+	switch (dir) {
+	case GraphObject::right:
+		if (x + 3 >= 64 || y + 3 >= 60)
+			return;
+
+		for (int i = 0; i < 4; i++) {
+			if (icefield[x + 3][y + i] != nullptr) {
+				playSound(SOUND_DIG);
+				digIce(x + 3, y + i);
+			}
+		}
+		break;
+
+
+	case(GraphObject::left):
+		if (x < 0 || y + 3 >= 60)
+			return;
+		for (int i = 0; i < 4; i++) {
+			if (icefield[x][y + i] != nullptr) {
+				playSound(SOUND_DIG);
+				digIce(x, y + i);
+			}
+		}
+		break;
+
+	case(GraphObject::down):
+		if (y < 0 || x + 3 >= 64)
+			return;
+		for (int i = 0; i < 4; i++) {
+			if (icefield[x + i][y] != nullptr) {
+				playSound(SOUND_DIG);
+				digIce(x + i, y);
+			}
+		}
+		break;
+
+	case(GraphObject::up):
+		if (y >= 60 || x + 3 >= 64)
+			return;
+		for (int i = 0; i < 4; i++) {
+			if (icefield[x + i][y] != nullptr) {
+				playSound(SOUND_DIG);
+				digIce(x + i, y);
+			}
+		}
+		break;
+	}
+}
+
+
+void StudentWorld::digIce(int x, int y) {
+	if (x < 0 || x > 64 || y < 0 || y > 60) { return; }
+	if (icefield[x][y] == nullptr) { return; }
+
+	icefield[x][y]->setVisible(false);
+	delete icefield[x][y];
+	icefield[x][y] = nullptr;
+}
+
+bool StudentWorld::canMove(int x, int y) {
+	return (x >= 0 && x < 64 && y >= 0 && y < 64);
+}
+
 void StudentWorld::createOilField() {
 	srand(time(NULL));
 	player = new IceMan(this, 30, 60);
@@ -140,11 +203,9 @@ void StudentWorld::createOilField() {
 	// test creating new Ice blocks
 	for (int i = 0; i < 64; i++) {
 		for (int j = 0; j < 60; j++) {
-			icefield[i][j] = new Ice(this, i, j);
-			continue;
-			if ((i >= 30 && i <= 33) && j >= SPRITE_WIDTH) {
-				icefield[i][j] = nullptr;
-				continue;
+			if (i >= 30 && i <= 33 && j > 3) { icefield[i][j] = nullptr; }
+			else {
+				icefield[i][j] = new Ice(this, i, j);
 			}
 		}
 	}

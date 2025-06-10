@@ -30,17 +30,17 @@ public:
 
 	void playerDig(GraphObject::Direction dir, int x, int y);
 
-	bool isNearIceMan(Actor* a, int radius) const;
-
-	Ice* (*getIceField())[VIEW_WIDTH];
-
-	int getRemainingOil();
-
 	void digIce(int x, int y);
 
 	bool canMove(int x, int y);
 
-private:
+	bool isNearIceMan(Actor* a, int radius) const;
+
+	//Ice* (*getIceField())[VIEW_WIDTH];
+
+	int getRemainingOil() const;
+
+
 	//creates the oilField
 	void createOilField();
 
@@ -48,10 +48,10 @@ private:
 
 	bool playerDiedDuringThisTick();
 
-
+	Ice* icefield[VIEW_WIDTH][VIEW_HEIGHT];
 
 	std::vector <Actor*> actors;
-	Ice* icefield[64][60];
+
 	IceMan* player;
 
 	double distance(int x1, int y1, int x2, int y2) const;

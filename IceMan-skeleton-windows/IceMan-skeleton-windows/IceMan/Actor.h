@@ -6,14 +6,8 @@
 class StudentWorld;
 
 class Actor : public GraphObject {
-private:
-    bool alive;
-    StudentWorld* world;
-
 public:
     Actor(StudentWorld* sw, int startX, int startY, Direction startDir, int imageID, double size, int depth, bool visible);
-
-    virtual ~Actor() {}
 
     StudentWorld* getWorld() const;
 
@@ -29,7 +23,7 @@ public:
     void setDead();
 
     // Annoy this actor.
-    virtual bool annoy(unsigned int amt);
+    //virtual bool annoy(unsigned int amt);
 
     int getTickCounter() const;
 
@@ -37,10 +31,11 @@ public:
 
     unsigned int tickCounter;
 
+   
 private:
-    bool alive;
+    bool alive = true;
 
-
+    
     StudentWorld* world;
 
 };
@@ -74,47 +69,29 @@ private:
 class Agent : public Actor
 {
 public:
-
-
-
-
-
-class Ice : public Actor {
-public:
     Agent(StudentWorld* world, int startX, int startY, Direction startDir,
         int imageID, unsigned int hitPoints);
 
     // Pick up a gold nugget.
-    virtual void addGold() = 0;
+    //virtual void addGold() = 0;
 
     // How many hit points does this actor have left?
     unsigned int getHitPoints() const;
 
-    virtual bool annoy(unsigned int amount);
-    virtual bool canPickThingsUp() const;
+    //virtual bool annoy(unsigned int amount);
+    //virtual bool canPickThingsUp() const;
 private:
-    unsigned int hp;
+    unsigned int hp = 10;
 };
-
-class IceMan : public Actor {
-public:
-    IceMan(StudentWorld* sw, int startX, int startY);
-
-    ~IceMan() {}
-
-    void doSomething();
-
-};
-
 
 class IceMan : public Agent
 {
 public:
     IceMan(StudentWorld* world, int startX, int startY);
     virtual void move();
-    virtual bool annoy(unsigned int amount);
-    virtual void addGold();
-    virtual bool canDigThroughIce() const;
+    //virtual bool annoy(unsigned int amount);
+    //virtual void addGold();
+    //virtual bool canDigThroughIce() const;
 
     // Pick up a sonar kit.
     void addSonar();
@@ -138,8 +115,8 @@ public:
     Protester(StudentWorld* world, int startX, int startY, int imageID,
         unsigned int hitPoints, unsigned int score);
     virtual void move();
-    virtual bool annoy(unsigned int amount);
-    virtual void addGold();
+    //virtual bool annoy(unsigned int amount);
+    //virtual void addGold();
     virtual bool huntsIceMan() const;
     bool canPickDroppedGoldUp() const;
 
@@ -172,8 +149,10 @@ class RegularProtester : public Protester
 public:
     RegularProtester(StudentWorld* world, int startX, int startY, int imageID);
     virtual void move();
-    virtual void addGold();
-
+    //virtual void addGold();
+    void chooseNewMoveDistance();
+private:
+    int numSquaresToMoveInCurrentDirection;
 };
 
 class HardcoreProtester : public Protester
@@ -181,15 +160,15 @@ class HardcoreProtester : public Protester
 public:
     HardcoreProtester(StudentWorld* world, int startX, int startY, int imageID);
     virtual void move();
-    virtual void addGold();
+    //virtual void addGold();
 };
 
-// class Ice : public Actor
-// {
-// public:
-// //     Ice(StudentWorld* world, int stsartX, int startY);
-// //     virtual void move();
-// // };
+class Ice : public Actor
+{
+public:
+    Ice(StudentWorld* world, int stsartX, int startY);
+    virtual void move();
+};
 
 
 

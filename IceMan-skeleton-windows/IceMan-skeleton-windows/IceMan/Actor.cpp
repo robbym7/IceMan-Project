@@ -9,13 +9,16 @@ using namespace std;
 
 Actor::Actor(StudentWorld* sw, int startX, int startY, Direction startDir, int imageID, double size, int depth, bool visible)
     :GraphObject(imageID, startX, startY, startDir, size, depth)
-    ,alive(true), world(sw)
+    , alive(true), world(sw)
 {
-    setVisible(visible);
+    if (visible)
+        setVisible(true);
+    else
+        setVisible(false);
 }
 bool Actor::isAlive() const
 {
-    return alive;
+    return true;
 }
 
 void Actor::setDead()
@@ -55,7 +58,7 @@ Agent::Agent(StudentWorld* world, int startX, int startY, Direction startDir, in
     Actor(world, startX, startY, startDir, true, imageID, 1.0, 0),
     hp(hitPoints)
 {
-
+    //setVisible(true);
 }
 unsigned int Agent::getHitPoints() const
 {
@@ -63,6 +66,8 @@ unsigned int Agent::getHitPoints() const
 }
 
 //reduce hp by the annoyed amount, if hp is less then 0 it kills the agent
+
+/*
 bool Agent::annoy(unsigned int amount)
 {
     hp -= amount;
@@ -70,21 +75,18 @@ bool Agent::annoy(unsigned int amount)
         setDead();
     return false;
 }
+*/
 
-
-// IceMan::IceMan(StudentWorld* sw, int startX, int startY)
-//     :Actor(sw, startX, startY, right, IID_PLAYER, 1.0, 0, true)
-// {
-//     setVisible(true);
-// }
 
 
 //=========================== ICEMAN ==============================
-void IceMan::move() {
-    /*if (isAlive() == false) {
-        return;
-    }*/
+IceMan::IceMan(StudentWorld* world, int startX, int startY) :
+    Agent(world, startX, startY, right, IID_PLAYER, 10)
+{
+    setVisible(true);
+}
 
+void IceMan::move() {
     int input;
     StudentWorld* sw = getWorld();
     Direction dir = getDirection();
@@ -139,8 +141,10 @@ void IceMan::move() {
 }
 
 //=========================== ICE ==============================
-Ice::Ice(StudentWorld* world, int startX, int startY) : Actor(world, startX, startY, right, true, IID_ICE, 0.25, 3)
+Ice::Ice(StudentWorld* sw, int startX, int startY)
+    :Actor(sw, startX, startY, right, IID_ICE, 0.25, 3, true)
 {
+    setVisible(true);
 }
 void Ice::move() {}
 
@@ -156,14 +160,11 @@ void Protester::move()
 {
 }
 
-bool Protester::annoy(unsigned int amount)
-{
-    return false;
-}
+//bool Protester::annoy(unsigned int amount)
+//{
+//    return false;
+//}
 
-void Protester::addGold()
-{
-}
 
 bool Protester::huntsIceMan() const
 {
@@ -230,7 +231,7 @@ void RegularProtester::move() {
     //check if in rest state
     if (tickCounter % getTicksToNextMove() != 0) {
         increaseTick();
-        return;
+        
     }
     else {
         //check if it wants to leave oil field
@@ -243,7 +244,7 @@ void RegularProtester::move() {
             }
             //move towards the exit
             else {
-                Ice* (*icefield)[VIEW_WIDTH] = getWorld()->getIceField();
+                Ice* (*icefield)[VIEW_WIDTH] = getWorld()->icefield;
                 vector<vector<int>> dist = pathFind(icefield);
 
                 int x = getX();
@@ -287,6 +288,10 @@ void RegularProtester::move() {
 
 
 // PATH FINDING FOR PROTESTORS
+void RegularProtester::chooseNewMoveDistance() {
+    numSquaresToMoveInCurrentDirection = rand() % 53 + 8; 
+}
+
 bool isValidCell(int x, int y) {
     return x >= 0 && y >= 0 && x < VIEW_WIDTH && y < VIEW_HEIGHT;
 }
@@ -375,7 +380,7 @@ void HardcoreProtester::move() {
             }
             //move towards the exit
             else {
-                Ice* (*icefield)[VIEW_WIDTH] = getWorld()->getIceField();
+                Ice* (*icefield)[VIEW_WIDTH] = getWorld()->icefield;
                 vector<vector<int>> dist = pathFind(icefield);
 
                 int x = getX();

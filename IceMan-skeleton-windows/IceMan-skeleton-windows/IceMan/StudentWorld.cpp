@@ -35,6 +35,7 @@ int StudentWorld::move() {
 		if (a->isAlive()) {
 			//actors perform their action then check if player died or finished level
 			a->move();
+			/*
 			if (playerDiedDuringThisTick()) {
 				return GWSTATUS_PLAYER_DIED;
 			}
@@ -42,6 +43,7 @@ int StudentWorld::move() {
 				playSound(GWSTATUS_FINISHED_LEVEL);
 				return GWSTATUS_FINISHED_LEVEL;
 			}
+			*/
 		}
 	}
 	//remove any actors that died
@@ -65,7 +67,6 @@ int StudentWorld::move() {
 }
 
 //is called when player loses a life
-
 void StudentWorld::cleanUp() {
 
 	for (auto a : actors) {
@@ -129,6 +130,75 @@ void StudentWorld::updateDisplayText() {
 	return;
 }
 
+//should have a 2D array of ice actors
+//should place the IceMan 
+void StudentWorld::createOilField() {
+	//srand(time(NULL));
+	player = new IceMan(this, 30, 60);
+	
+	//currentLevel = getLevel();
+	remainingOil = 9;
+
+
+	// test creating new Ice blocks
+	for (int i = 0; i < 64; i++) {
+		for (int j = 0; j < 60; j++) {
+			if (i >= 30 && i <= 33 && j > 3) { 
+				icefield[i][j] = nullptr; 
+			}
+			else {
+				icefield[i][j] = new Ice(this, i, j);
+			}
+		}
+	}
+	//addActor((new RegularProtester(this, 60, 60, IID_PROTESTER)));
+	//actors.push_back(new HardcoreProtester(this, 60, 60, IID_HARD_CORE_PROTESTER));
+
+}
+
+int StudentWorld::getRemainingOil() const {
+	return remainingOil;
+}
+
+bool StudentWorld::playerCompletedCurrentLevel() const {
+	if (remainingOil <= 0) {
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
+bool StudentWorld::playerDiedDuringThisTick() {
+	if (player->isAlive() == true) {
+		return false;
+	}
+	else {
+		decLives();
+		return true;
+	}
+
+	return false;
+}
+double StudentWorld::distance(int x1, int y1, int x2, int y2) const
+{
+	return sqrt((pow(x2 - x1, 2) + pow(y2 - y1, 2) * 1.0));
+}
+
+bool StudentWorld::isNearIceMan(Actor* a, int radius) const
+{
+	int actorX = a->getX();
+	int actorY = a->getY();
+	int playerX = player->getX();
+	int playerY = player->getY();
+	double dist = distance(actorX, actorY, playerX, playerY);
+	if (dist <= radius)
+		return true;
+	else
+		return false;
+}
+
+
 void StudentWorld::playerDig(GraphObject::Direction dir, int x, int y) {
 	switch (dir) {
 	case GraphObject::right:
@@ -138,7 +208,7 @@ void StudentWorld::playerDig(GraphObject::Direction dir, int x, int y) {
 		for (int i = 0; i < 4; i++) {
 			if (icefield[x + 3][y + i] != nullptr) {
 				playSound(SOUND_DIG);
-				digIce(x + 3, y + i);
+				digIce(x+3 , y + i);
 			}
 		}
 		break;
@@ -181,140 +251,22 @@ void StudentWorld::playerDig(GraphObject::Direction dir, int x, int y) {
 
 
 void StudentWorld::digIce(int x, int y) {
-	if (x < 0 || x > 64 || y < 0 || y > 60) { return; }
-	if (icefield[x][y] == nullptr) { return; }
+	if (x <= 0 || x >= 64 || y <= 0 || y >= 60) { 
+		return; 
+	}
+	if (icefield[x][y] == nullptr) {
+		return;
+	}
 
 	icefield[x][y]->setVisible(false);
 	delete icefield[x][y];
 	icefield[x][y] = nullptr;
 }
-
 bool StudentWorld::canMove(int x, int y) {
 	return (x >= 0 && x < 64 && y >= 0 && y < 64);
 }
 
-void StudentWorld::createOilField() {
-	srand(time(NULL));
-	player = new IceMan(this, 30, 60);
-	currentLevel = getLevel();
-	remainingOil = numOilBarrels;
 
-
-	// test creating new Ice blocks
-	for (int i = 0; i < 64; i++) {
-		for (int j = 0; j < 60; j++) {
-			if (i >= 30 && i <= 33 && j > 3) { icefield[i][j] = nullptr; }
-			else {
-				icefield[i][j] = new Ice(this, i, j);
-			}
-		}
-	}
-	actors.push_back(new RegularProtester(this, 60, 60, IID_PROTESTER));
-	actors.push_back(new HardcoreProtester(this, 60, 60, IID_HARD_CORE_PROTESTER));
-
-}
-
-int StudentWorld::getRemainingOil(){
-	return remainingOil;
-}
-
-bool StudentWorld::playerCompletedCurrentLevel() const {
-	if (remainingOil <= 0) {
-		return true;
-	}
-	else {
-		return false;
-	}
-}
-
-bool StudentWorld::playerDiedDuringThisTick() {
-	if (player->isAlive() == false) {
-		return false;
-	}
-	else {
-		decLives();
-		return true;
-	}
-	
-	return false;
-}
-double StudentWorld::distance(int x1, int y1, int x2, int y2) const
-{
-	return sqrt((pow(x2 - x1, 2) + pow(y2 - y1, 2) * 1.0));
-}
-
-bool StudentWorld::isNearIceMan(Actor* a, int radius) const
-{
-	int actorX = a->getX();
-	int actorY = a->getY();
-	int playerX = player->getX();
-	int playerY = player->getY();
-	double dist = distance(actorX, actorY, playerX, playerY);
-	if (dist <= radius)
-		return true;
-	else
-		return false;
-}
-
-
-void StudentWorld::playerDig(GraphObject::Direction dir, int x, int y)
-{
-	switch (dir) {
-    case(GraphObject::right):
-        if (x > VIEW_WIDTH - SPRITE_WIDTH)
-            return;
-        for (int i = 0; i < SPRITE_WIDTH; i++) {
-            if (y + i < VIEW_HEIGHT) {
-                if (icefield[x + 3][y + i] != nullptr) {
-                    playSound(SOUND_DIG);
-                    delete icefield[x + 3][y + i];
-                    icefield[x + 3][y + i] = nullptr;
-                }
-            }
-        }
-        break;
-    case(GraphObject::left):
-        if (x < 0)
-            return;
-        for (int i = 0; i < SPRITE_WIDTH; i++) {
-            if (y + i < VIEW_HEIGHT) {
-                if (icefield[x][y + i] != nullptr) {
-                    playSound(SOUND_DIG);
-                    delete icefield[x][y + i];
-                    icefield[x][y + i] = nullptr;
-                }
-            }
-        }
-        break;
-    case(GraphObject::down):
-        if (y < 0)
-            return;
-        for (int i = 0; i < SPRITE_HEIGHT; i++) {
-            if(x + i < VIEW_WIDTH ){
-                if (icefield[x + i][y] != nullptr) {
-                    playSound(SOUND_DIG);
-                    delete icefield[x + i][y];
-                    icefield[x + i][y] = nullptr;
-                }
-            }
-        }
-        break;
-    case(GraphObject::up):
-        if (y > VIEW_HEIGHT - SPRITE_HEIGHT)
-            return;
-        for (int i = 0; i < SPRITE_HEIGHT; i++) {
-            if (y + 3 < VIEW_HEIGHT) {
-                if (icefield[x + i][y + 3] != nullptr) {
-                    playSound(SOUND_DIG);
-                    delete icefield[x + i][y + 3];
-                    icefield[x + i][y + 3] = nullptr;
-                }
-            }
-        }
-        break;
-    }
-    return;
-}
 /*
 all GameWorld functions
 

@@ -56,16 +56,7 @@ private:
 
 //All actor classes
 
-// class IceMan : public Actor {
-// public:
-//     IceMan(StudentWorld* sw, int startX, int startY);
-//     void move();
 
-// };
-
-
-
-//
 class Agent : public Actor
 {
 public:
@@ -107,6 +98,9 @@ public:
 
     // Get amount of water
     unsigned int getWater() const;
+
+    private:
+        unsigned int waterCharge;
 };
 
 class Protester : public Agent
@@ -117,7 +111,7 @@ public:
     virtual void move();
     //virtual bool annoy(unsigned int amount);
     //virtual void addGold();
-    virtual bool huntsIceMan() const;
+    //virtual bool huntsIceMan() const;
     bool canPickDroppedGoldUp() const;
 
     // Set state to having given up protest
@@ -136,9 +130,10 @@ public:
 
     void resetNonRestingTick();
 
+    
 
 
-
+    
     bool wantsToLeaveOilField;
     int ticksBetweenMoves;
     int nonRestingTick;
@@ -150,7 +145,9 @@ public:
     RegularProtester(StudentWorld* world, int startX, int startY, int imageID);
     virtual void move();
     //virtual void addGold();
-    void chooseNewMoveDistance();
+    void pathFind(int& x, int& y, Ice* icefield[VIEW_WIDTH][VIEW_HEIGHT]);
+
+    
 private:
     int numSquaresToMoveInCurrentDirection;
 };
@@ -171,8 +168,16 @@ public:
 };
 
 
+// =========================== BOULDER ==============================
+class Boulder : public Actor
+{
+public:
+    Boulder(StudentWorld* world, int startX, int startY);
+    virtual void move();
+    virtual bool canActorsPassThroughMe() const;
+private:
+    bool falling;
+};
 
-
-std::vector<std::vector<int>> pathFind(Ice* icefield[VIEW_WIDTH][VIEW_HEIGHT]);
 
 #endif // ACTOR_H_

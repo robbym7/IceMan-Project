@@ -35,36 +35,53 @@ public:
 	bool canMove(int x, int y);
 
 	bool isNearIceMan(Actor* a, int radius) const;
+	
+    bool isBoulder(int x, int y);
+    
+    bool scanIce(Actor* a, GraphObject::Direction dir, int numTiles);
 
-	//Ice* (*getIceField())[VIEW_WIDTH];
+    bool scanPlayer(Actor* a, int radius);
 
 	int getRemainingOil() const;
+	
 
+	IceMan* getPlayer();
 
 	//creates the oilField
 	void createOilField();
-
+	void generateBoulders(int totalBoulders);
+	bool doesOverlap(int x, int y, double radius);
+	
 	bool playerCompletedCurrentLevel() const;
 
 	bool playerDiedDuringThisTick();
 
 	Ice* icefield[VIEW_WIDTH][VIEW_HEIGHT];
+private:
+	
 
 	std::vector <Actor*> actors;
 
 	IceMan* player;
-
+	
 	double distance(int x1, int y1, int x2, int y2) const;
 	int remainingOil;
 	//everything that changes based on the level number
 	int currentLevel;
 	int numBoulders;
-	int numGoldNuggets;
+	int numGold;
 	int numOilBarrels;
 
-
-
-
+	//display text getters
+	std::string formatDisplayTest(int level, int lives, int health,int squirts, int gold, int barrelsLeft, int sonar, int score);
+    int getCurrentGameLevel() const;
+    int getNumLivesLeft() const;
+    int getCurrentHealth() const;
+    int getSquirtsLeftInSquirtGun() const;
+    int getPlayerGoldCount() const;
+    int getNumberOfBarrelsRemainingToBePickedUp() const;
+    int getPlayerSonarChargeCount() const;
+    int getCurrentScore() const;
 };
 
 /*

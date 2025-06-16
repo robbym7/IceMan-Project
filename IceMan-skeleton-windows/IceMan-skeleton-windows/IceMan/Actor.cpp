@@ -81,13 +81,15 @@ bool Agent::annoy(unsigned int amount)
 
 //=========================== ICEMAN ==============================
 IceMan::IceMan(StudentWorld* world, int startX, int startY) :
-    Agent(world, startX, startY, right, IID_PLAYER, 10)
+    Agent(world, startX, startY, right, IID_PLAYER, 10), waterCharge(5)
 {
     setVisible(true);
 }
 
 void IceMan::move() {
     int input;
+    int playerX = getX();
+	int playerY = getY();
     StudentWorld* sw = getWorld();
     Direction dir = getDirection();
     if (sw->getKey(input) == true) {
@@ -136,7 +138,17 @@ void IceMan::move() {
                 }
             }
             break;
+            case KEY_PRESS_SPACE:
+            if (waterCharge <= 0)
+				return;
+			if (waterCharge > 0) {
+				sw->addActor(new Squirt(sw, playerX, playerY, getDirection()));
+				waterCharge--;
+			}
+			break;
         }
+        
+
     }
 }
 
@@ -166,10 +178,10 @@ void Protester::move()
 //}
 
 
-bool Protester::huntsIceMan() const
-{
-    return true;
-}
+// bool Protester::huntsIceMan() const
+// {
+//     return true;
+// }
 
 void Protester::setTicksToNextMove()
 {
@@ -221,7 +233,7 @@ void Protester::resetNonRestingTick()
 RegularProtester::RegularProtester(StudentWorld* world, int startX, int startY, int imageID) :
     Protester(world, startX, startY, IID_PROTESTER, 5, 0) {
     setTicksToNextMove();
-    setVisible(true);
+    //setVisible(true);
 }
 void RegularProtester::move() {
     //check if alive
@@ -244,33 +256,12 @@ void RegularProtester::move() {
             }
             //move towards the exit
             else {
-                Ice* (*icefield)[VIEW_WIDTH] = getWorld()->icefield;
-                vector<vector<int>> dist = pathFind(icefield);
-
-                int x = getX();
-                int y = getY();
-                int bestX = x;
-                int bestY = y;
-                int bestDist = dist[x][y];
-
-                // Try each of the 4 directions
-                const int dx[] = { 0, 0, -1, 1 };
-                const int dy[] = { 1, -1, 0, 0 };
-                for (int dir = 0; dir < 4; ++dir) {
-                    int nx = x + dx[dir];
-                    int ny = y + dy[dir];
-                    if (nx < 0 || nx >= 64 || ny < 0 || ny >= 64)
-                        continue;
-                    if (dist[nx][ny] >= 0 && dist[nx][ny] < bestDist) {
-                        bestDist = dist[nx][ny];
-                        bestX = nx;
-                        bestY = ny;
-                    }
-                }
-
-                if (bestX != x || bestY != y) {
-                    moveTo(bestX, bestY);
-                }
+                getWorld()->icefield;
+                int currentX= getX();
+                int currentY= getY();
+                //move one step towards the exit
+                //pathFind(currentX, currentY, getWorld()->icefield);
+                
             }
         }
     }
@@ -288,68 +279,81 @@ void RegularProtester::move() {
 
 
 // PATH FINDING FOR PROTESTORS
-void RegularProtester::chooseNewMoveDistance() {
-    numSquaresToMoveInCurrentDirection = rand() % 53 + 8; 
-}
-
 bool isValidCell(int x, int y) {
     return x >= 0 && y >= 0 && x < VIEW_WIDTH && y < VIEW_HEIGHT;
 }
 bool isPassable(int x, int y, Ice* icefield[VIEW_WIDTH][VIEW_HEIGHT]) {
     for (int i = 0; i < 4; ++i) {
         for (int j = 0; j < 4; ++j) {
-            int nx = x + i;
-            int ny = y + j;
-            if (!isValidCell(nx, ny) || icefield[nx][ny]) return false;
+            int newX = x + i;
+            int newY = y + j;
+            if (!isValidCell(newX, newY) || icefield[newX][newY]) return false;
         }
     }
     return true;
 }
-vector<vector<int>> pathFind(Ice* icefield[VIEW_WIDTH][VIEW_HEIGHT]) {
+
+void RegularProtester::pathFind(int& x, int& y, Ice* icefield[VIEW_WIDTH][VIEW_HEIGHT]) {
     vector<vector<int>> dist(64, vector<int>(64, -1));
     queue<pair<int, int>> q;
 
-    if (isPassable(60, 60, icefield) == false) return dist;
+    if (!isPassable(60, 60, icefield)) return;
 
     dist[60][60] = 0;
-    q.push({ 60, 60 });
+    q.push({60, 60});
 
     while (!q.empty()) {
-        int x = q.front().first;
-        int y = q.front().second;
+        int currentX = q.front().first;
+        int currentY = q.front().second;
         q.pop();
-        int currentDistance = dist[x][y];
+        int currentDistance = dist[currentX][currentY];
 
-        for (int dir = 0; dir < 4; dir++) {
-            int nx, ny;
-
-            if (dir == 0) { // right
-                nx = x + 1;
-                ny = y;
-            }
-            else if (dir == 1) { // left
-                nx = x - 1;
-                ny = y;
-            }
-            else if (dir == 2) { // up
-                nx = x;
-                ny = y + 1;
-            }
-            else { // down
-                nx = x;
-                ny = y - 1;
+        for (int dir = 0; dir < 4; ++dir) {
+            int newX = currentX, newY = currentY;
+            switch (dir) {
+                case 0: newX = currentX + 1; break;
+                case 1: newX = currentX - 1; break;
+                case 2: newY = currentY + 1; break;
+                case 3: newY = currentY - 1; break;
             }
 
-            if (!isValidCell(nx, ny)) continue;
-            if (dist[nx][ny] != -1) continue;
-            if (!isPassable(nx, ny, icefield)) continue;
+            if (!isValidCell(newX, newY)) continue;
+            if (dist[newX][newY] != -1) continue;
+            if (!isPassable(newX, newY, icefield)) continue;
 
-            dist[nx][ny] = currentDistance + 1;
-            q.push({ nx, ny });
+            dist[newX][newY] = currentDistance + 1;
+            q.push({newX, newY});
+        }
+    }
+    //case for if dist is unchanged(unreachable place)
+    if (dist[x][y] == -1) {
+        return;
+    }
+    
+
+    int bestDist = dist[x][y];
+    int bestX = x;
+    int bestY = y;
+
+    for (int dir = 0; dir < 4; ++dir) {
+        int newX = x, newY = y;
+        switch (dir) {
+            case 0: newX = x + 1; break;
+            case 1: newX = x - 1; break;
+            case 2: newY = y + 1; break;
+            case 3: newY = y - 1; break;
+        }
+
+        if (!isValidCell(newX, newY)) continue;
+        if (dist[newX][newY] == -1) continue;
+        if (dist[newX][newY] < bestDist) {
+            bestDist = dist[newX][newY];
+            bestX = newX;
+            bestY = newY;
         }
     }
 
-    return dist;
+    //moveTo(bestX, bestY);
 }
 void addGold() {}
 
@@ -361,73 +365,11 @@ HardcoreProtester::HardcoreProtester(StudentWorld* world, int startX, int startY
 }
 void HardcoreProtester::move() {
     //check if alive
-    if (isAlive() == false) {
-        return;
-    }
-    //check if in rest state
-    if (tickCounter % getTicksToNextMove() != 0) {
-        increaseTick();
-        return;
-    }
-    else {
-        //check if it wants to leave oil field
-        if (getWantsToLeaveOilField() == true) {
-            // check if it is at its exit point
-            if (getX() == VIEW_WIDTH - SPRITE_WIDTH && getY() == VIEW_HEIGHT - SPRITE_HEIGHT) {
-                setVisible(false);
-                setDead();
-                return;
-            }
-            //move towards the exit
-            else {
-                Ice* (*icefield)[VIEW_WIDTH] = getWorld()->icefield;
-                vector<vector<int>> dist = pathFind(icefield);
-
-                int x = getX();
-                int y = getY();
-                int bestX = x;
-                int bestY = y;
-                int bestDist = dist[x][y];
-
-                // Try each of the 4 directions
-                const int dx[] = { 0, 0, -1, 1 };
-                const int dy[] = { 1, -1, 0, 0 };
-                for (int dir = 0; dir < 4; ++dir) {
-                    int nx = x + dx[dir];
-                    int ny = y + dy[dir];
-                    if (nx < 0 || nx >= 64 || ny < 0 || ny >= 64)
-                        continue;
-                    if (dist[nx][ny] >= 0 && dist[nx][ny] < bestDist) {
-                        bestDist = dist[nx][ny];
-                        bestX = nx;
-                        bestY = ny;
-                    }
-                }
-
-                if (bestX != x || bestY != y) {
-                    moveTo(bestX, bestY);
-                }
-            }
-        }
-    }
-    if (getNonRestingTick() < 15) {
-        incNonRestingTick();
-    }
-    if (getWorld()->isNearIceMan(this, 4) && getNonRestingTick() >= 15) {
-        getWorld()->playSound(SOUND_PROTESTER_YELL);
-        //getWorld()->annoyIceMan();
-        resetNonRestingTick();
-    }
-    else {
-        //check if iceman is in a straight line (not within 4 units, pathfinding works)
-        //if he is then turn and move towards him 
-    }
-    return;
-}
+   
 //void HardcoreProtester::addGold(){}
 
 
-
+}
 
 
 
@@ -482,4 +424,39 @@ void Squirt::move()
 
     }
 
+}
+
+// =========================== BOULDER ==============================
+void Boulder::move()
+{
+	//Student World will deal with deleting the boulder;
+	if (isAlive() == false)
+		return;
+	if (falling == false && getWorld()->scanIce(this, down, 1) == true) {
+		falling = true;
+	}
+	if (falling && getTickCounter() < 30) {
+		increaseTick();
+	}
+	if (falling && getTickCounter() >= 30) {
+		//makes it so sound plays once
+		if (getTickCounter() == 30) {
+			getWorld()->playSound(SOUND_FALLING_ROCK);
+			increaseTick();
+		}
+		if (getWorld()->isNearIceMan(this, 3)) {
+			getWorld()->getPlayer()->setDead();
+		}
+		if (getX() != 0 && getWorld()->scanIce(this, down, 1) == true) {
+			moveToIfPossible(getX(), getY() - 1);
+		}
+		else {
+			setDead();
+		}
+	}
+}
+
+bool Boulder::canActorsPassThroughMe() const
+{
+	return false;
 }

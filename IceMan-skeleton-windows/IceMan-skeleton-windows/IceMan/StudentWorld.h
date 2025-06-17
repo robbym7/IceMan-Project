@@ -28,60 +28,69 @@ public:
 	//Updating the Display Text
 	void updateDisplayText();
 
-	void playerDig(GraphObject::Direction dir, int x, int y);
+	void playerDig(int x, int y);
 
 	void digIce(int x, int y);
 
 	bool canMove(int x, int y);
 
-	bool isNearIceMan(Actor* a, int radius) const;
-	
-    bool isBoulder(int x, int y);
-    
-    bool scanIce(Actor* a, GraphObject::Direction dir, int numTiles);
+	bool isNearIceMan(Actor* obj, float radius);
 
-    bool scanPlayer(Actor* a, int radius);
-
-	int getRemainingOil() const;
-	
-
-	IceMan* getPlayer();
+	void barrelsToPickUp();
 
 	//creates the oilField
 	void createOilField();
-	void generateBoulders(int totalBoulders);
-	bool doesOverlap(int x, int y, double radius);
-	
-	bool playerCompletedCurrentLevel() const;
+
+	bool playerCompletedCurrentLevel();
 
 	bool playerDiedDuringThisTick();
 
-	Ice* icefield[VIEW_WIDTH][VIEW_HEIGHT];
-private:
-	
-
 	std::vector <Actor*> actors;
-
+	Ice* icefield[VIEW_WIDTH][60];
 	IceMan* player;
-	
+
 	double distance(int x1, int y1, int x2, int y2) const;
-	int remainingOil;
+
+	bool isOverlap(int x, int y);
+
+	void dropGold(int x, int y);
+
+	bool canAddSonar();
+
+	bool isIce(int x, int y);
+
+	void illuminate(int x, int y);
+
+	bool isBoulder(int x, int y);
+
+	bool scanIce(Actor* a, GraphObject::Direction dir, int numTiles);
+
+	bool scanPlayer(Actor* a, int radius);
+
+	bool canAddProtester();
+
+	bool StudentWorld::clearVerticalPath(Protester* p);
+	bool StudentWorld::clearHorizontalPath(Protester* p);
 	//everything that changes based on the level number
-	int currentLevel;
+	int currentLevelNum;
 	int numBoulders;
-	int numGold;
-	int numOilBarrels;
+	int numGoldNuggets;
+	int remainingOilBarrels;
+	int ticksSinceLastProtester;
+	int ticksToWaitToAddProtester;
+	int numProtesters;
 
 	//display text getters
-	std::string formatDisplayTest(int level, int lives, int health,int squirts, int gold, int barrelsLeft, int sonar, int score);
-    int getCurrentGameLevel() const;
-    int getNumLivesLeft() const;
-    int getCurrentHealth() const;
-    int getSquirtsLeftInSquirtGun() const;
-    int getPlayerGoldCount() const;
-    int getNumberOfBarrelsRemainingToBePickedUp() const;
-    int getPlayerSonarChargeCount() const;
-    int getCurrentScore() const;
+	std::string formatDisplayText(int level, int lives, int health, int squirts, int gold, int barrelsLeft, int sonar, int score);
+	int getCurrentGameLevel() const;
+	int getNumLivesLeft() const;
+	int getCurrentHealth() const;
+	int getSquirtsLeftInSquirtGun() const;
+	int getPlayerGoldCount() const;
+	int getNumberOfBarrelsRemainingToBePickedUp() const;
+	int getPlayerSonarChargeCount() const;
+	int getCurrentScore() const;
+	IceMan* getPlayer();
 };
 
 /*

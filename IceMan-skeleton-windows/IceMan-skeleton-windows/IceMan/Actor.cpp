@@ -1,35 +1,30 @@
 #include "Actor.h"
 #include "StudentWorld.h"
 
-
 #include <vector>
 #include <queue>
 
-using namespace std;
+using namespace std; 
 
+//constructor for actor
 Actor::Actor(StudentWorld* sw, int startX, int startY, Direction startDir, int imageID, double size, int depth, bool visible)
     :GraphObject(imageID, startX, startY, startDir, size, depth)
-    , alive(true), world(sw)
+    ,alive(true), world(sw)
 {
-    if (visible)
-        setVisible(true);
-    else
-        setVisible(false);
-}
-bool Actor::isAlive() const
-{
-    return true;
+    setVisible(visible);
 }
 
-void Actor::setDead()
+bool Actor::isAlive() const
 {
-    alive = false;
+    return alive;
 }
 
 StudentWorld* Actor::getWorld() const
 {
     return world;
 }
+
+void Actor::setDead() { alive = false; }
 
 int Actor::getTickCounter()const
 {
@@ -50,46 +45,24 @@ bool Actor::moveToIfPossible(int x, int y)
     return false;
 }
 
-
-
-//=========================== AGENT ==============================
-
 Agent::Agent(StudentWorld* world, int startX, int startY, Direction startDir, int imageID, unsigned int hitPoints) :
-    Actor(world, startX, startY, startDir, true, imageID, 1.0, 0),
-    hp(hitPoints)
-{
-    //setVisible(true);
-}
-unsigned int Agent::getHitPoints() const
-{
-    return hp;
-}
+    Actor(world, startX, startY, startDir, imageID, 1.0, 0, true)
+    , hp(hitPoints) { }
 
-//reduce hp by the annoyed amount, if hp is less then 0 it kills the agent
+unsigned int Agent::getHitPoints() const { return hp; }
 
-/*
-bool Agent::annoy(unsigned int amount)
-{
-    hp -= amount;
-    if (hp <= 0)
-        setDead();
-    return false;
-}
-*/
-
-
-
-//=========================== ICEMAN ==============================
-IceMan::IceMan(StudentWorld* world, int startX, int startY) :
-    Agent(world, startX, startY, right, IID_PLAYER, 10), waterCharge(5)
+IceMan::IceMan(StudentWorld* sw, int startX, int startY)
+    :Agent(sw, startX, startY, right, IID_PLAYER, 10)
 {
     setVisible(true);
+    m_gold = 0;
+    m_water = 5;
+    m_sonar = 1;
 }
 
 void IceMan::move() {
+
     int input;
-    int playerX = getX();
-	int playerY = getY();
     StudentWorld* sw = getWorld();
     Direction dir = getDirection();
     if (sw->getKey(input) == true) {
@@ -101,7 +74,7 @@ void IceMan::move() {
             else {
                 if (sw->canMove(getX() - 1, getY())) {
                     moveTo(getX() - 1, getY());
-                    sw->playerDig(GraphObject::left, getX(), getY());
+                    sw->playerDig(getX(), getY());
                 }
             }
             break;
@@ -112,7 +85,7 @@ void IceMan::move() {
             else {
                 if (sw->canMove(getX() + 1, getY())) {
                     moveTo(getX() + 1, getY());
-                    sw->playerDig(GraphObject::right, getX(), getY());
+                    sw->playerDig(getX(), getY());
                 }
             }
             break;
@@ -123,7 +96,7 @@ void IceMan::move() {
             else {
                 if (sw->canMove(getX(), getY() + 1)) {
                     moveTo(getX(), getY() + 1);
-                    sw->playerDig(GraphObject::up, getX(), getY());
+                    sw->playerDig(getX(), getY());
                 }
             }
             break;
@@ -134,254 +107,268 @@ void IceMan::move() {
             else {
                 if (sw->canMove(getX(), getY() - 1)) {
                     moveTo(getX(), getY() - 1);
-                    sw->playerDig(GraphObject::down, getX(), getY());
+                    sw->playerDig(getX(), getY());
                 }
             }
             break;
-            case KEY_PRESS_SPACE:
-            if (waterCharge <= 0)
-				return;
-			if (waterCharge > 0) {
-				sw->addActor(new Squirt(sw, playerX, playerY, getDirection()));
-				waterCharge--;
-			}
-			break;
-        }
-        
+        case KEY_PRESS_TAB:
+            if (m_gold > 0) {
+                sw->dropGold(getX(), getY());
+                m_gold--;
+            }
+            break;
 
+        case 'z':
+        case 'Z':
+            if (m_sonar > 0) {
+                sw->illuminate(getX(), getY());
+                m_sonar--;
+            }
+            break;
+
+        case KEY_PRESS_SPACE:
+            //Implement the code to use Squirt
+            if (waterCharge <= 0)
+                return;
+            if (waterCharge > 0) {
+                sw->addActor(new Squirt(sw, getX(), getY(), getDirection()));
+                sw->playSound(SOUND_PLAYER_SQUIRT);
+                waterCharge--;
+            }
+
+        }
     }
 }
 
-//=========================== ICE ==============================
+void IceMan::addGold() { m_gold++; }
+
+void IceMan::addSonar() { m_sonar++; }
+
+void IceMan::addWater() { m_water++; }
+
+unsigned int IceMan::getWater() const {
+    return m_water;
+}
+unsigned int IceMan::getSonar() const {
+    return m_sonar;
+}
+unsigned int IceMan::getGold() const {
+    return m_gold;
+}
+
 Ice::Ice(StudentWorld* sw, int startX, int startY)
-    :Actor(sw, startX, startY, right, IID_ICE, 0.25, 3, true)
+    : Actor(sw, startX, startY, right, IID_ICE, 0.25, 3, true)
 {
     setVisible(true);
 }
-void Ice::move() {}
 
-//=========================== PROTESTOR CLASS ==============================
-Protester::Protester(StudentWorld* world, int startX, int startY, int imageID, unsigned int hitPoints, unsigned int score) :
-    Agent(world, startX, startY, left, imageID, hitPoints)
-
+Protester::Protester(StudentWorld* sw, int imageID, int hitPoints)
+    : Agent(sw, 60, 60, left, imageID, hitPoints) 
 {
-    setTicksToNextMove();
+    m_ticksToWaitBetweenMoves = max(0, 3 - sw->currentLevelNum);
+    m_leaveOilField = false;
+    m_nonRestingTicks = 0;
+    m_numSquaresToMoveInCurrentDirection = 0;
 }
 
-void Protester::move()
-{
+void Protester::addGold() { }
+
+void RegularProtester::move() {
+    if (!isAlive()) return;
+
+    if (getRestingTicks() > 0) {
+        setRestingTicks(getRestingTicks() - 1);
+        return;
+    }
+
+    IceMan* iceman = getWorld()->player;
+    if (isLeavingOilField()) {
+
+    }
+
+    // check if iceman is within line of sight
+    if (iceman->getX() == getX() || iceman->getY() == getY()) {
+        if (getWorld()->distance(iceman->getX(), iceman->getY(), getX(), getY()) >= 4.0) {
+            // check if there's a clear path
+            if (getWorld()->clearVerticalPath(this)) {
+                // iceman is below protester
+                if (iceman->getY() < getY()) {
+                    setDirection(down);
+                    moveTo(getX(), getY() - 1);
+                    setNumSquaresToMove(0);
+                }
+                // iceman is above protester    
+                else {
+                    setDirection(up);
+                    moveTo(getX(), getY() + 1);
+                    setNumSquaresToMove(0);
+                }               
+            }
+ 
+            else if (getWorld()->clearHorizontalPath(this)) {
+                // iceman is to the left of protester
+                if (iceman->getX() < getX()) {
+                    setDirection(left);
+                    moveTo(getX() - 1, getY());
+                    setNumSquaresToMove(0);
+                }
+                // iceman is to the right of protester    
+                else {
+                    setDirection(right);
+                    moveTo(getX() + 1, getY());
+                    setNumSquaresToMove(0);
+                }
+            }
+        }
+    }
 }
 
-//bool Protester::annoy(unsigned int amount)
-//{
-//    return false;
-//}
+void Ice::move() { ; };
 
-
-// bool Protester::huntsIceMan() const
-// {
-//     return true;
-// }
-
-void Protester::setTicksToNextMove()
-{
-    ticksBetweenMoves = (std::max(0, 3 - (int)(getWorld()->getLevel()) / 4));
+void Boulder::move() {
+    //Student World will deal with deleting the boulder;
+    if (isAlive() == false)
+        return;
+    /*
+    if (falling == false && getWorld()->scanIce(this, down, 1) == true) {
+        falling = true;
+    }
+    if (falling && getTickCounter() < 30) {
+        increaseTick();
+    }
+    if (falling && getTickCounter() >= 30) {
+        //makes it so sound plays once
+        if (getTickCounter() == 30) {
+            getWorld()->playSound(SOUND_FALLING_ROCK);
+            increaseTick();
+        }
+        if (getWorld()->isNearIceMan(this, 3)) {
+            getWorld()->player->setDead();
+        }
+        if (getX() != 0 && getWorld()->scanIce(this, down, 1) == true) {
+            moveToIfPossible(getX(), getY() - 1);
+        }
+        else {
+            setDead();
+        }
+    }
+    */
 }
 
-void Protester::setMustLeaveOilField()
-{
-    wantsToLeaveOilField = true;
-}
-
-bool Protester::canPickDroppedGoldUp() const
+bool Boulder::canActorsPassThroughMe() const
 {
     return false;
 }
 
-int Protester::getTicksToNextMove() const
+Goodies::Goodies(StudentWorld* world, int startX, int startY, int imageID, int soundToPlay, bool activateOnPlayer, bool activateOnProtestor, bool initiallyActive)
+    :Actor(world, startX, startY, right, imageID, 1.0, 2, initiallyActive) 
 {
-    return ticksBetweenMoves;
+    m_activateOnPlayer = activateOnPlayer;
 }
 
-bool Protester::getWantsToLeaveOilField() const
+void Goodies::move() { ; }
+
+void Goodies::decreaseTick()
 {
-    return wantsToLeaveOilField;
+    ticksToLive--;
 }
 
-void Protester::incNonRestingTick()
-{
-    nonRestingTick++;
+void Goodies::setTicksToLive(int n) { 
+    ticksToLive = n; 
 }
 
-int Protester::getNonRestingTick() const
-{
-    return nonRestingTick;
-}
+OilBarrel::OilBarrel(StudentWorld* world, int startX, int startY)
+    :Goodies(world, startX, startY, IID_BARREL, SOUND_FOUND_OIL, true, false, false) {}
 
-void Protester::resetNonRestingTick()
-{
-    nonRestingTick = 0;
-}
+void OilBarrel::move() { 
+    if (!isAlive()) { return; }
 
-
-
-
-
-
-
-//=========================== REGULAR PROTESTOR ==============================
-RegularProtester::RegularProtester(StudentWorld* world, int startX, int startY, int imageID) :
-    Protester(world, startX, startY, IID_PROTESTER, 5, 0) {
-    setTicksToNextMove();
-    //setVisible(true);
-}
-void RegularProtester::move() {
-    //check if alive
-    if (isAlive() == false) {
+    if (!isVisible() && getWorld()->isNearIceMan(this, 4.0)) {
+        setVisible(true);
         return;
     }
-    //check if in rest state
-    if (tickCounter % getTicksToNextMove() != 0) {
-        increaseTick();
-        
+
+    if (getWorld()->isNearIceMan(this, 3.0)) {
+        setDead();
+        getWorld()->playSound(SOUND_FOUND_OIL);
+        getWorld()->increaseScore(1000);
+        getWorld()->barrelsToPickUp();
     }
-    else {
-        //check if it wants to leave oil field
-        if (getWantsToLeaveOilField() == true) {
-            // check if it is at its exit point
-            if (getX() == VIEW_WIDTH - SPRITE_WIDTH && getY() == VIEW_HEIGHT - SPRITE_HEIGHT) {
-                setVisible(false);
-                setDead();
-                return;
-            }
-            //move towards the exit
-            else {
-                getWorld()->icefield;
-                int currentX= getX();
-                int currentY= getY();
-                //move one step towards the exit
-                //pathFind(currentX, currentY, getWorld()->icefield);
-                
-            }
-        }
-    }
-    if (getNonRestingTick() < 15) {
-        incNonRestingTick();
-    }
-    if (getWorld()->isNearIceMan(this, 4) && getNonRestingTick() >= 15) {
-        getWorld()->playSound(SOUND_PROTESTER_YELL);
-        //getWorld()->annoyIceMan();
-        resetNonRestingTick();
-    }
-    return;
 }
 
-
-
-// PATH FINDING FOR PROTESTORS
-bool isValidCell(int x, int y) {
-    return x >= 0 && y >= 0 && x < VIEW_WIDTH && y < VIEW_HEIGHT;
-}
-bool isPassable(int x, int y, Ice* icefield[VIEW_WIDTH][VIEW_HEIGHT]) {
-    for (int i = 0; i < 4; ++i) {
-        for (int j = 0; j < 4; ++j) {
-            int newX = x + i;
-            int newY = y + j;
-            if (!isValidCell(newX, newY) || icefield[newX][newY]) return false;
-        }
-    }
-    return true;
+GoldNugget::GoldNugget(StudentWorld* world, int startX, int startY, bool temp)
+    :Goodies(world, startX, startY, IID_GOLD, SOUND_GOT_GOODIE, true, false, false) 
+{
+    m_tempState = temp;
 }
 
-void RegularProtester::pathFind(int& x, int& y, Ice* icefield[VIEW_WIDTH][VIEW_HEIGHT]) {
-    vector<vector<int>> dist(64, vector<int>(64, -1));
-    queue<pair<int, int>> q;
+void GoldNugget::move() {
+    if (!isAlive()) { return; }
 
-    if (!isPassable(60, 60, icefield)) return;
-
-    dist[60][60] = 0;
-    q.push({60, 60});
-
-    while (!q.empty()) {
-        int currentX = q.front().first;
-        int currentY = q.front().second;
-        q.pop();
-        int currentDistance = dist[currentX][currentY];
-
-        for (int dir = 0; dir < 4; ++dir) {
-            int newX = currentX, newY = currentY;
-            switch (dir) {
-                case 0: newX = currentX + 1; break;
-                case 1: newX = currentX - 1; break;
-                case 2: newY = currentY + 1; break;
-                case 3: newY = currentY - 1; break;
-            }
-
-            if (!isValidCell(newX, newY)) continue;
-            if (dist[newX][newY] != -1) continue;
-            if (!isPassable(newX, newY, icefield)) continue;
-
-            dist[newX][newY] = currentDistance + 1;
-            q.push({newX, newY});
-        }
-    }
-    //case for if dist is unchanged(unreachable place)
-    if (dist[x][y] == -1) {
+    if (!isVisible() && getWorld()->isNearIceMan(this, 4.0)) {
+        setVisible(true);
         return;
     }
-    
 
-    int bestDist = dist[x][y];
-    int bestX = x;
-    int bestY = y;
-
-    for (int dir = 0; dir < 4; ++dir) {
-        int newX = x, newY = y;
-        switch (dir) {
-            case 0: newX = x + 1; break;
-            case 1: newX = x - 1; break;
-            case 2: newY = y + 1; break;
-            case 3: newY = y - 1; break;
-        }
-
-        if (!isValidCell(newX, newY)) continue;
-        if (dist[newX][newY] == -1) continue;
-        if (dist[newX][newY] < bestDist) {
-            bestDist = dist[newX][newY];
-            bestX = newX;
-            bestY = newY;
-        }
+    if (isPickupAble() && getWorld()->isNearIceMan(this, 3.0)) {
+        setDead();
+        getWorld()->playSound(SOUND_GOT_GOODIE);
+        getWorld()->increaseScore(10);
+        getWorld()->player->addGold();
     }
 
-    //moveTo(bestX, bestY);
-}
-void addGold() {}
-
-
-// =========================== HARDCORE PROTESTOR ==============================
-HardcoreProtester::HardcoreProtester(StudentWorld* world, int startX, int startY, int imageID) :
-    Protester(world, startX, startY, IID_PROTESTER, 5, 0) {
-
-}
-void HardcoreProtester::move() {
-    //check if alive
-   
-//void HardcoreProtester::addGold(){}
-
-
+    else if (!isPickupAble()) {}
 }
 
+bool GoldNugget::isTemporary() const { return m_tempState; }
 
+SonarKit::SonarKit(StudentWorld* world, int startX, int startY) 
+    :Goodies(world, startX, startY, IID_SONAR, SOUND_GOT_GOODIE, true, false, true) 
+{ 
+    setTicksToLive(max(100, 300 - 10 * world->currentLevelNum));
+}
 
+void SonarKit::move() {
+    if (!isAlive()) { return; }
 
-// =========================== SQUIRT ==============================
-Squirt::Squirt(StudentWorld* world, int startX, int startY, Direction startDir) :
-    Actor(world, startX, startY, startDir, true, IID_WATER_SPURT, 1, 1),
-    distanceTraveled(0)
+    if (getWorld()->isNearIceMan(this, 3.0)) {
+        setDead();
+        getWorld()->playSound(SOUND_GOT_GOODIE);
+        getWorld()->increaseScore(75);
+        getWorld()->player->addSonar();
+    }
+
+    else if (getTicksToLive() == 0) { setDead(); }
+
+    decreaseTick();
+}
+
+WaterPool::WaterPool(StudentWorld* world, int startX, int startY)
+    :Goodies(world, startX, startY, IID_WATER_POOL, SOUND_GOT_GOODIE, true, false, true)
 {
+    setTicksToLive(max(100, 300 - 10 * world->currentLevelNum));
 }
-void Squirt::move()
-{
+
+void WaterPool::move() {
+    if (!isAlive()) { return; }
+
+    if (getWorld()->isNearIceMan(this, 3.0)) {
+        setDead();
+        getWorld()->playSound(SOUND_GOT_GOODIE);
+        getWorld()->increaseScore(100);
+        getWorld()->player->addWater();
+    }
+
+    else if (getTicksToLive() == 0) { setDead(); }
+
+    decreaseTick();
+}
+
+Squirt::Squirt(StudentWorld* world, int startX, int startY, Direction startDir) 
+    : Actor(world, startX, startY, startDir, IID_WATER_SPURT, 1, 1, true)
+    ,distanceTraveled(0) {}
+
+void Squirt::move() {
     if (isAlive() == false) {
         return;
     }
@@ -392,71 +379,37 @@ void Squirt::move()
         setVisible(false);
         return;
     }
+
     Direction dir = getDirection();
     int x = getX();
     int y = getY();
-    //if (getWorld()->scanIce(this, dir, 1) == true) {
-    switch (dir) {
-    case up:
-        if (moveToIfPossible(x, y + 1))
-            distanceTraveled++;
-        else
-            setDead();
-        break;
-    case down:
-        if (moveToIfPossible(x, y - 1))
-            distanceTraveled++;
-        else
-            setDead();
-        break;
-    case right:
-        if (moveToIfPossible(x + 1, y))
-            distanceTraveled++;
-        else
-            setDead();
-        break;
-    case left:
-        if (moveToIfPossible(x - 1, y))
-            distanceTraveled++;
-        else
-            setDead();
-        break;
+    if (getWorld()->scanIce(this, dir, 1) == true) {
+        switch (dir) {
+        case up:
+            if (moveToIfPossible(x, y + 1))
+                distanceTraveled++;
+            else
+                setDead();
+            break;
+        case down:
+            if (moveToIfPossible(x, y - 1))
+                distanceTraveled++;
+            else
+                setDead();
+            break;
+        case right:
+            if (moveToIfPossible(x + 1, y))
+                distanceTraveled++;
+            else
+                setDead();
+            break;
+        case left:
+            if (moveToIfPossible(x - 1, y))
+                distanceTraveled++;
+            else
+                setDead();
+            break;
 
+        }
     }
-
-}
-
-// =========================== BOULDER ==============================
-void Boulder::move()
-{
-	//Student World will deal with deleting the boulder;
-	if (isAlive() == false)
-		return;
-	if (falling == false && getWorld()->scanIce(this, down, 1) == true) {
-		falling = true;
-	}
-	if (falling && getTickCounter() < 30) {
-		increaseTick();
-	}
-	if (falling && getTickCounter() >= 30) {
-		//makes it so sound plays once
-		if (getTickCounter() == 30) {
-			getWorld()->playSound(SOUND_FALLING_ROCK);
-			increaseTick();
-		}
-		if (getWorld()->isNearIceMan(this, 3)) {
-			getWorld()->getPlayer()->setDead();
-		}
-		if (getX() != 0 && getWorld()->scanIce(this, down, 1) == true) {
-			moveToIfPossible(getX(), getY() - 1);
-		}
-		else {
-			setDead();
-		}
-	}
-}
-
-bool Boulder::canActorsPassThroughMe() const
-{
-	return false;
 }
